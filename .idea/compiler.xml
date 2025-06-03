@@ -10,7 +10,7 @@
         <module name="config-server" />
         <module name="registry-server" />
       </profile>
-      <profile name="Annotation profile for attendance-management" enabled="true">
+      <profile name="Annotation profile for employee-management" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
@@ -18,8 +18,8 @@
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.38/lombok-1.18.38.jar" />
         </processorPath>
         <module name="Leave-management" />
-        <module name="attendance-management" />
         <module name="employee-management" />
+        <module name="attendance-management" />
       </profile>
     </annotationProcessing>
   </component>

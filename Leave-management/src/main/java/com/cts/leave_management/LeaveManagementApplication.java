@@ -1,4 +1,4 @@
-package com.cts.Leave_management;
+package com.cts.leave_management;
 
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;

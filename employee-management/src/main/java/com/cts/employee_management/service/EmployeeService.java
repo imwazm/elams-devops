@@ -2,6 +2,7 @@ package com.cts.employee_management.service;
 
 import com.cts.employee_management.dto.EmployeeRequestDto;
 import com.cts.employee_management.dto.EmployeeResponseDto;
+import com.cts.employee_management.entity.enums.ShiftType;
 
 import java.util.List;
 
@@ -29,5 +30,5 @@ public interface EmployeeService {
 
     List<EmployeeResponseDto> findTeamMembers(Long managerId);
 
-    EmployeeResponseDto assignShiftToEmployee(Long employeeId, Long shiftId);
+    EmployeeResponseDto assignShiftToEmployee(Long employeeId, ShiftType shiftType);
 }

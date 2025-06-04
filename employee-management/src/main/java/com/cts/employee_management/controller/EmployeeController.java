@@ -2,6 +2,7 @@ package com.cts.employee_management.controller;
 
 import com.cts.employee_management.dto.EmployeeRequestDto;
 import com.cts.employee_management.dto.EmployeeResponseDto;
+import com.cts.employee_management.entity.enums.ShiftType;
 import com.cts.employee_management.service.EmployeeService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -77,9 +78,9 @@ public class EmployeeController {
         return employeeService.findTeamMembers(managerId);
     }
 
-    @PutMapping("{employeeId}/assign-shift/{shiftId}")
+    @PutMapping("{employeeId}/assign-shift/")
     public EmployeeResponseDto assignShiftToEmployee(@PathVariable Long employeeId,
-                                                     @PathVariable Long shiftId){
-        return employeeService.assignShiftToEmployee(employeeId, shiftId);
+                                                     @RequestParam ShiftType shiftType){
+        return employeeService.assignShiftToEmployee(employeeId, shiftType);
     }
 }

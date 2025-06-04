@@ -5,6 +5,7 @@ import com.cts.employee_management.dto.EmployeeResponseDto;
 import com.cts.employee_management.entity.Employee;
 import com.cts.employee_management.entity.Shift;
 import com.cts.employee_management.entity.enums.Role;
+import com.cts.employee_management.entity.enums.ShiftType;
 import com.cts.employee_management.exception.InvalidRoleException;
 import com.cts.employee_management.exception.ResourceNotFoundException;
 import com.cts.employee_management.repository.EmployeeRepository;
@@ -176,10 +177,10 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
-    public EmployeeResponseDto assignShiftToEmployee(Long employeeId, Long shiftId) {
+    public EmployeeResponseDto assignShiftToEmployee(Long employeeId, ShiftType shiftType) {
         logger.info("Assigning shift to Employee...");
-        Shift shift = shiftRepository.findById(shiftId)
-                .orElseThrow(() -> new ResourceNotFoundException("Shift with id " + shiftId + " not found"));
+        Shift shift = shiftRepository.findByType(shiftType)
+                .orElseThrow(() -> new ResourceNotFoundException("Shift type: " + shiftType + " not found"));
         Employee employee = this.findEmployeeByIdHelper(employeeId);
         if(employee.getRole()!=Role.EMPLOYEE){
             String msg = "Manager/Admin can't be assigned to Shift";

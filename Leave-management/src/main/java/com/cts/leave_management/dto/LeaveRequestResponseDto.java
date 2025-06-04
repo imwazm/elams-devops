@@ -17,5 +17,5 @@ public class LeaveRequestResponseDto {
     private String status;
     private String reason;
     private String employeeName;
-    private Long employeeId; // Added to ensure employee linkage
+    private Long employeeId;
 }

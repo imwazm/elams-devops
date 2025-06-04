@@ -9,11 +9,13 @@ import java.time.LocalDate;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class LeaveRequestDto {
+public class LeaveRequestResponseDto {
     private Long leaveId;
     private String leaveType;
     private LocalDate startDate;
     private LocalDate endDate;
     private String status;
-    private Long employeeId;
+    private String reason;
+    private String employeeName;
+    private Long employeeId; // Added to ensure employee linkage
 }

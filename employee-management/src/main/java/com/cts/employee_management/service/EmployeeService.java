@@ -28,4 +28,6 @@ public interface EmployeeService {
     EmployeeResponseDto assignManager(Long employeeId, Long managerId);
 
     List<EmployeeResponseDto> findTeamMembers(Long managerId);
+
+    EmployeeResponseDto assignShiftToEmployee(Long employeeId, Long shiftId);
 }

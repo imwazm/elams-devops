@@ -3,10 +3,12 @@ package com.cts.employee_management.service.impl;
 import com.cts.employee_management.dto.EmployeeRequestDto;
 import com.cts.employee_management.dto.EmployeeResponseDto;
 import com.cts.employee_management.entity.Employee;
+import com.cts.employee_management.entity.Shift;
 import com.cts.employee_management.entity.enums.Role;
 import com.cts.employee_management.exception.InvalidRoleException;
 import com.cts.employee_management.exception.ResourceNotFoundException;
 import com.cts.employee_management.repository.EmployeeRepository;
+import com.cts.employee_management.repository.ShiftRepository;
 import com.cts.employee_management.service.EmployeeService;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
@@ -23,6 +25,9 @@ public class EmployeeServiceImpl implements EmployeeService {
     EmployeeRepository employeeRepository;
 
     @Autowired
+    ShiftRepository shiftRepository;
+
+    @Autowired
     ModelMapper modelMapper;
 
     private static final Logger logger = LoggerFactory.getLogger(EmployeeServiceImpl.class);
@@ -33,7 +38,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         newEmployee.setRole(Role.EMPLOYEE);
         Employee savedEmployee = employeeRepository.save(newEmployee);
         logger.info("New employee added with ID: " + savedEmployee.getId());
-        return modelMapper.map(savedEmployee, EmployeeResponseDto.class);
+        return convertToDto(savedEmployee);
     }
 
     @Override
@@ -42,7 +47,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         newEmployee.setRole(Role.MANAGER);
         Employee savedEmployee = employeeRepository.save(newEmployee);
         logger.info("New manager added with ID: " + savedEmployee.getId());
-        return modelMapper.map(savedEmployee, EmployeeResponseDto.class);
+        return convertToDto(savedEmployee);
     }
 
     @Override
@@ -51,14 +56,14 @@ public class EmployeeServiceImpl implements EmployeeService {
         newEmployee.setRole(Role.ADMIN);
         Employee savedEmployee = employeeRepository.save(newEmployee);
         logger.info("New admin added with ID: " + savedEmployee.getId());
-        return modelMapper.map(savedEmployee, EmployeeResponseDto.class);
+        return convertToDto(savedEmployee);
     }
 
     @Override
     public List<EmployeeResponseDto> findAllEmployees() {
         logger.info("Fetching all employees");
         return employeeRepository.findAll()
-                .stream().map((element) -> modelMapper.map(element, EmployeeResponseDto.class))
+                .stream().map(this::convertToDto)
                 .toList();
     }
 
@@ -72,7 +77,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         }
         logger.info("Employee found: " + employee.getEmployeeName());
         logger.debug("Employee details: " + employee);
-        return modelMapper.map(employee, EmployeeResponseDto.class);
+        return  convertToDto(employee);
     }
 
     @Override
@@ -92,7 +97,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         employeeRepository.save(employee);
         logger.debug("Updated employee details after promotion: " + employee);
         logger.info("Employee with ID " + id + " successfully promoted to Manager");
-        return modelMapper.map(employee, EmployeeResponseDto.class);
+        return  convertToDto(employee);
     }
 
     @Override
@@ -110,7 +115,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         employee.setRole(Role.EMPLOYEE);
         employeeRepository.save(employee);
         logger.info("Employee with ID " + id + " successfully demoted to Employee");
-        return modelMapper.map(employee, EmployeeResponseDto.class);
+        return  convertToDto(employee);
     }
 
     @Override
@@ -129,7 +134,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         employee.setEmail(employeeDto.getEmail());
         employee = employeeRepository.save(employee);
         logger.info("Employee with ID " + id + " updated successfully");
-        return modelMapper.map(employee, EmployeeResponseDto.class);
+        return  convertToDto(employee);
     }
 
     @Override
@@ -145,10 +150,15 @@ public class EmployeeServiceImpl implements EmployeeService {
         }
 
         Employee manager = findEmployeeByIdHelper(managerId);
+        if(manager.getRole() != Role.MANAGER){
+            String msg = "Employee with Id: " + managerId + " is not a Manager.";
+            logger.error(msg);
+            throw new InvalidRoleException(msg);
+        }
         employee.setManager(manager);
         Employee savedEmployee = employeeRepository.save(employee);
         logger.info("Manager with ID " + managerId + " assigned to employee with ID " + employeeId);
-        return modelMapper.map(savedEmployee, EmployeeResponseDto.class);
+        return  convertToDto(employee);
     }
 
     @Override
@@ -161,8 +171,32 @@ public class EmployeeServiceImpl implements EmployeeService {
         }
         List<Employee> teamMembers = manager.getTeamMembers();
         return teamMembers.stream()
-                .map((element) -> modelMapper.map(element, EmployeeResponseDto.class))
+                .map(this::convertToDto)
                 .toList();
+    }
+
+    @Override
+    public EmployeeResponseDto assignShiftToEmployee(Long employeeId, Long shiftId) {
+        logger.info("Assigning shift to Employee...");
+        Shift shift = shiftRepository.findById(shiftId)
+                .orElseThrow(() -> new ResourceNotFoundException("Shift with id " + shiftId + " not found"));
+        Employee employee = this.findEmployeeByIdHelper(employeeId);
+        if(employee.getRole()!=Role.EMPLOYEE){
+            String msg = "Manager/Admin can't be assigned to Shift";
+            logger.error(msg);
+            throw new InvalidRoleException(msg);
+        }
+        employee.setShift(shift);
+        return  convertToDto(employee);
+    }
+
+    private EmployeeResponseDto convertToDto(Employee employee){
+        EmployeeResponseDto mappedDto = modelMapper.map(employee, EmployeeResponseDto.class);
+        if(employee.getShift()!=null)
+            mappedDto.setShiftId(employee.getShift().getId());
+        if(employee.getManager()!=null)
+            mappedDto.setManagerId(employee.getManager().getId());
+        return mappedDto;
     }
 
     private Employee findEmployeeByIdHelper(Long id){

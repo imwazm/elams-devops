@@ -3,6 +3,7 @@ package com.cts.employee_management.controller;
 import com.cts.employee_management.dto.EmployeeRequestDto;
 import com.cts.employee_management.dto.EmployeeResponseDto;
 import com.cts.employee_management.service.EmployeeService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -18,7 +19,7 @@ public class EmployeeController {
 
     @PostMapping("add-employee")
     @ResponseStatus(HttpStatus.CREATED)
-    public EmployeeResponseDto addEmployee(@RequestBody EmployeeRequestDto employeeRequestDto){
+    public EmployeeResponseDto addEmployee(@Valid @RequestBody EmployeeRequestDto employeeRequestDto){
         return employeeService.addEmployee(employeeRequestDto);
     }
 
@@ -44,12 +45,12 @@ public class EmployeeController {
         return employeeService.findEmployeeById(id);
     }
 
-    @PostMapping("{id}/promote")
+    @PutMapping("{id}/promote")
     public EmployeeResponseDto promoteEmployee(@PathVariable Long id){
         return employeeService.promoteEmployee(id);
     }
 
-    @PostMapping("{id}/demote")
+    @PutMapping("{id}/demote")
     public EmployeeResponseDto demoteEmployee(@PathVariable Long id){
         return employeeService.demoteEmployee(id);
     }
@@ -65,7 +66,7 @@ public class EmployeeController {
         return employeeService.updateEmployeeDetails(id, employee);
     }
 
-    @PostMapping("{employeeId}/assign-manager/{managerId}")
+    @PutMapping("{employeeId}/assign-manager/{managerId}")
     public EmployeeResponseDto assignManager(@PathVariable Long employeeId,
                                              @PathVariable Long managerId){
         return employeeService.assignManager(employeeId, managerId);
@@ -74,5 +75,11 @@ public class EmployeeController {
     @GetMapping("{managerId}/team-members")
     public List<EmployeeResponseDto> findTeamMembers(@PathVariable Long managerId){
         return employeeService.findTeamMembers(managerId);
+    }
+
+    @PutMapping("{employeeId}/assign-shift/{shiftId}")
+    public EmployeeResponseDto assignShiftToEmployee(@PathVariable Long employeeId,
+                                                     @PathVariable Long shiftId){
+        return employeeService.assignShiftToEmployee(employeeId, shiftId);
     }
 }

@@ -30,6 +30,12 @@ public class EmployeeController {
         return employeeService.addManager(employeeRequestDto);
     }
 
+    @GetMapping("get-employee-by-shift")
+    //http://localhost:xxxx/api/..?shiftType=MORNING
+    public List<EmployeeResponseDto> getEmployeeByShift(@RequestParam ShiftType shiftType){
+        return employeeService.findEmployeesByShift(shiftType);
+    }
+
     @PostMapping("add-admin")
     @ResponseStatus(HttpStatus.CREATED)
     public EmployeeResponseDto addAdmin(@RequestBody EmployeeRequestDto employeeRequestDto){

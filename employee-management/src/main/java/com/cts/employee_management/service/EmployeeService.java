@@ -31,4 +31,6 @@ public interface EmployeeService {
     List<EmployeeResponseDto> findTeamMembers(Long managerId);
 
     EmployeeResponseDto assignShiftToEmployee(Long employeeId, ShiftType shiftType);
+
+    List<EmployeeResponseDto> findEmployeesByShift(ShiftType shiftType);
 }

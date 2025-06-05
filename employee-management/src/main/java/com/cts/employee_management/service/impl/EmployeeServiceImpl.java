@@ -192,6 +192,13 @@ public class EmployeeServiceImpl implements EmployeeService {
         return  convertToDto(employee);
     }
 
+    @Override
+    public List<EmployeeResponseDto> findEmployeesByShift(ShiftType shiftType) {
+        return employeeRepository.findByShiftType(shiftType)
+                .stream().map(this::convertToDto)
+                .toList();
+    }
+
     private EmployeeResponseDto convertToDto(Employee employee){
         EmployeeResponseDto mappedDto = modelMapper.map(employee, EmployeeResponseDto.class);
         if(employee.getShift()!=null)

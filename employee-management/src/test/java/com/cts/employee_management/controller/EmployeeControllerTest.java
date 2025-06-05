@@ -44,9 +44,9 @@ public class EmployeeControllerTest {
     @BeforeEach
     void setup(){
 
-        employeeRequestDto =  new EmployeeRequestDto(null, "Akram", "akram@sample.com");
-        managerRequestDto =  new EmployeeRequestDto(null, "Piyush", "piyush@sample.com");
-        adminRequestDto =  new EmployeeRequestDto(null, "Rohit", "rohit@sample.com");
+        employeeRequestDto =  new EmployeeRequestDto("Akram", "akram@sample.com");
+        managerRequestDto =  new EmployeeRequestDto("Piyush", "piyush@sample.com");
+        adminRequestDto =  new EmployeeRequestDto("Rohit", "rohit@sample.com");
         employeeResponseDto = new EmployeeResponseDto(
                 1L, "Akram", "akram@sample.com", Role.EMPLOYEE,null,null
         );
@@ -165,7 +165,7 @@ public class EmployeeControllerTest {
         employeeResponseDto.setRole(Role.MANAGER);
         when(employeeService.promoteEmployee(id)).thenReturn(employeeResponseDto);
 
-        MvcResult mvcResult = mockMvc.perform(post("/api/employees/" + id + "/promote"))
+        MvcResult mvcResult = mockMvc.perform(put("/api/employees/" + id + "/promote"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andReturn();
@@ -179,7 +179,7 @@ public class EmployeeControllerTest {
         Long id = 2L;
         when(employeeService.promoteEmployee(id)).thenThrow(new ResourceNotFoundException(""));
 
-        MvcResult mvcResult = mockMvc.perform(post("/api/employees/" + id + "/promote"))
+        MvcResult mvcResult = mockMvc.perform(put("/api/employees/" + id + "/promote"))
                 .andExpect(status().isNotFound())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andReturn();
@@ -194,7 +194,7 @@ public class EmployeeControllerTest {
         employeeResponseDto.setRole(Role.EMPLOYEE);
         when(employeeService.demoteEmployee(id)).thenReturn(employeeResponseDto);
 
-        MvcResult mvcResult = mockMvc.perform(post("/api/employees/" + id + "/demote"))
+        MvcResult mvcResult = mockMvc.perform(put("/api/employees/" + id + "/demote"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andReturn();
@@ -208,7 +208,7 @@ public class EmployeeControllerTest {
         Long id = 1L;
         when(employeeService.demoteEmployee(id)).thenThrow(new ResourceNotFoundException(""));
 
-        MvcResult mvcResult = mockMvc.perform(post("/api/employees/" + id + "/demote"))
+        MvcResult mvcResult = mockMvc.perform(put("/api/employees/" + id + "/demote"))
                 .andExpect(status().isNotFound())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andReturn();
@@ -253,7 +253,7 @@ public class EmployeeControllerTest {
         employeeResponseDto.setManagerId(managerId);
         when(employeeService.assignManager(employeeId, managerId)).thenReturn(employeeResponseDto);
 
-        MvcResult mvcResult = mockMvc.perform(post("/api/employees/" + employeeId + "/assign-manager/" + managerId))
+        MvcResult mvcResult = mockMvc.perform(put("/api/employees/" + employeeId + "/assign-manager/" + managerId))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andReturn();

@@ -196,7 +196,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         if(employee.getShift()!=null)
             mappedDto.setShiftId(employee.getShift().getId());
         if(employee.getManager()!=null)
-            mappedDto.setManagerId(employee.getManager().getId());
+            mappedDto.setManagerId(employee.getShift().getId());
         return mappedDto;
     }
 

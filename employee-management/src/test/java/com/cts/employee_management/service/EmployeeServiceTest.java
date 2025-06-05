@@ -51,7 +51,7 @@ public class EmployeeServiceTest {
 
     @BeforeEach
     void setupObject(){
-        employeeRequestDto = new EmployeeRequestDto(null, "Akram", "akram@sample.com");
+        employeeRequestDto = new EmployeeRequestDto("Akram", "akram@sample.com");
         newEmployee = new Employee(null, "Akram","akram@sample.com", Role.EMPLOYEE,
                 null, null, null);
         savedEmployee = new Employee(1L, "Akram","akram@sample.com", Role.EMPLOYEE,
@@ -85,9 +85,9 @@ public class EmployeeServiceTest {
         employeeList.add(new Employee(3L, "Rohit","Rohit@sample.com", Role.ADMIN,
                 null, null, null));
 
-        employeeDto1 = new EmployeeRequestDto(null, "Akram","akram@sample.com");
-        employeeDto2 = new EmployeeRequestDto(null, "Piyush", "Piyush@sample.com");
-        employeeDto3 = new EmployeeRequestDto(null, "Rohit","Rohit@sample.com");
+        employeeDto1 = new EmployeeRequestDto("Akram","akram@sample.com");
+        employeeDto2 = new EmployeeRequestDto("Piyush", "Piyush@sample.com");
+        employeeDto3 = new EmployeeRequestDto("Rohit","Rohit@sample.com");
 
         employeeResponseDtoList.add(new EmployeeResponseDto(1L, "Akram","akram@sample.com",
                 Role.EMPLOYEE, null, null));

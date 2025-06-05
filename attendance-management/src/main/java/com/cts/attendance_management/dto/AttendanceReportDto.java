@@ -18,5 +18,5 @@ public class AttendanceReportDto {
     private int totalPresent;
     private int totalAbsent;
     private AttendanceReportType type;
-    private Employee employee;
+    private Long employeeId;
 }

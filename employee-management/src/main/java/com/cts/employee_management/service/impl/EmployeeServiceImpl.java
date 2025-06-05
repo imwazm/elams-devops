@@ -188,6 +188,7 @@ public class EmployeeServiceImpl implements EmployeeService {
             throw new InvalidRoleException(msg);
         }
         employee.setShift(shift);
+        employee = employeeRepository.save(employee);
         return  convertToDto(employee);
     }
 
@@ -196,7 +197,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         if(employee.getShift()!=null)
             mappedDto.setShiftId(employee.getShift().getId());
         if(employee.getManager()!=null)
-            mappedDto.setManagerId(employee.getShift().getId());
+            mappedDto.setManagerId(employee.getManager().getId());
         return mappedDto;
     }
 

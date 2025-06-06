@@ -10,10 +10,9 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 public class LeaveRequestDto {
-    private Long leaveId;
     private String leaveType;
     private LocalDate startDate;
     private LocalDate endDate;
-    private String status;
+    private String reason;
     private Long employeeId;
 }

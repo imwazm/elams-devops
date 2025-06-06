@@ -2,6 +2,8 @@ package com.cts.employee_management.entity;
 
 import com.cts.employee_management.entity.enums.Role;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,7 +21,10 @@ public class Employee {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank
     String employeeName;
+
+    @Email @Column(unique = true)
     String email;
 
     @Enumerated(EnumType.STRING)

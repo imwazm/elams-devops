@@ -3,6 +3,7 @@ package com.cts.employee_management.service.impl;
 import com.cts.employee_management.dto.ShiftRequestDto;
 import com.cts.employee_management.dto.ShiftResponseDto;
 import com.cts.employee_management.entity.Shift;
+import com.cts.employee_management.entity.enums.ShiftType;
 import com.cts.employee_management.exception.ResourceNotFoundException;
 import com.cts.employee_management.repository.ShiftRepository;
 import com.cts.employee_management.service.ShiftService;
@@ -47,5 +48,15 @@ public class ShiftServiceImpl implements ShiftService {
         Shift shift = shiftRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Shift with id " + id + " not found"));
         return modelMapper.map(shift, ShiftResponseDto.class);
+    }
+
+    @Override
+    public ShiftResponseDto getShiftByType(ShiftType type) {
+        return modelMapper.map(
+                shiftRepository.findByType(type)
+                        .orElseThrow(() -> new ResourceNotFoundException("Shift with type " + type + "not found."))
+                , ShiftResponseDto.class
+
+        );
     }
 }

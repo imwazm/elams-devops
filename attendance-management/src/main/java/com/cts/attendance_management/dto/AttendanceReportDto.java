@@ -17,6 +17,7 @@ public class AttendanceReportDto {
     private LocalDate endDate;
     private int totalPresent;
     private int totalAbsent;
+    private int totalWorkingDays;
     private AttendanceReportType type;
     private Long employeeId;
 }

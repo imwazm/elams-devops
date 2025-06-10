@@ -18,8 +18,8 @@ import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicLong; // Used for sequential ID
-import java.util.function.Function; // Import for Collectors.toMap
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Function; // <-- Added this import
 import java.util.stream.Collectors;
 
 @Service
@@ -33,7 +33,7 @@ public class AttendanceReportServiceImpl implements AttendanceReportService {
 
     @Override
     public void updateAttendanceReport(Attendance attendance) {
-        // Reports are generated on-demand.
+        // Reports are generated on-demand. This method might be for a future feature or not directly used in reports.
     }
 
     @Override
@@ -49,13 +49,11 @@ public class AttendanceReportServiceImpl implements AttendanceReportService {
         Map<Long, List<Attendance>> attendanceByEmployee = allAttendanceForYear.stream()
                 .collect(Collectors.groupingBy(att -> att.getEmployee().getId()));
 
-        long currentReportId = 1; // Initialize counter for this batch of reports
+        AtomicLong currentReportId = new AtomicLong(1); // Use AtomicLong for sequential ID across all reports
         for (Employee employee : employees) {
             List<Attendance> employeeAttendances = attendanceByEmployee.getOrDefault(employee.getId(), new ArrayList<>());
-            // Pass a new AtomicLong for each employee's set of reports, allowing it to increment
-            reports.addAll(generateReportsForEmployee(employee.getId(), employee.getEmployeeName(), employeeAttendances, new AtomicLong(currentReportId)));
-            // Update the main counter based on how many reports were added for this employee
-            currentReportId = reports.size() + 1;
+            // Pass the same AtomicLong to generateReportsForEmployee so IDs continue sequentially
+            reports.addAll(generateReportsForEmployee(employee.getId(), employee.getEmployeeName(), employeeAttendances, currentReportId));
         }
         return reports;
     }
@@ -65,12 +63,13 @@ public class AttendanceReportServiceImpl implements AttendanceReportService {
         Employee employee = employeeRepository.findById(employeeId)
                 .orElseThrow(() -> new ResourceNotFoundException("Employee not found with id: " + employeeId));
 
+        // For a single employee's report, fetch all attendance for the year first
         LocalDate today = LocalDate.now();
         LocalDate startOfYear = today.with(TemporalAdjusters.firstDayOfYear());
         LocalDate endOfYear = today.with(TemporalAdjusters.lastDayOfYear());
         List<Attendance> employeeAttendances = attendanceRepository.findByEmployeeIdAndDateBetween(employeeId, startOfYear, endOfYear);
 
-        // Reset counter for this specific employee's report batch
+        // Reset ID counter for this specific employee's report batch, starting from 1
         return generateReportsForEmployee(employeeId, employee.getEmployeeName(), employeeAttendances, new AtomicLong(1));
     }
 
@@ -89,7 +88,7 @@ public class AttendanceReportServiceImpl implements AttendanceReportService {
         List<AttendanceReportDto> reports = new ArrayList<>();
         LocalDate today = LocalDate.now();
 
-        // Reset counter for this specific type of report
+        // Reset ID counter for this specific type of report, starting from 1
         AtomicLong currentReportId = new AtomicLong(1);
 
         switch (reportType) {
@@ -113,19 +112,20 @@ public class AttendanceReportServiceImpl implements AttendanceReportService {
 
         List<Attendance> attendances = attendanceRepository.findByEmployeeIdAndDateBetween(employeeId, startDate, endDate);
 
-        // Reset counter for this single custom report
+        // Reset ID counter for this single custom report, starting from 1
         AtomicLong currentReportId = new AtomicLong(1);
 
-        // Passing null for report type as 'CUSTOM' is not in your enum.
-        // If you need 'CUSTOM' label, add it to your AttendanceReportType enum.
-        return calculateReport(attendances, employeeId, employee.getEmployeeName(), startDate, endDate, null, currentReportId);
+        // Assuming 'CUSTOM' is added to AttendanceReportType enum if needed.
+        // For now, setting it to a default or null if not directly in enum and not critical for DTO.
+        // If your DTO requires it to be non-null and CUSTOM is not in enum, you might need to adjust.
+        return calculateReport(attendances, employeeId, employee.getEmployeeName(), startDate, endDate, AttendanceReportType.CUSTOM, currentReportId);
     }
 
     private List<AttendanceReportDto> generateReportsForEmployee(Long employeeId, String employeeName, List<Attendance> allEmployeeAttendances, AtomicLong currentReportId) {
         List<AttendanceReportDto> reports = new ArrayList<>();
         LocalDate today = LocalDate.now();
 
-        // Pass the AtomicLong to each report generation method
+        // Pass the same AtomicLong to each report generation method
         reports.add(generateWeeklyReport(employeeId, employeeName, today, currentReportId));
         reports.add(generateMonthlyReport(employeeId, employeeName, today, currentReportId));
         reports.add(generateYearlyReport(employeeId, employeeName, today, currentReportId));
@@ -159,7 +159,7 @@ public class AttendanceReportServiceImpl implements AttendanceReportService {
 
         int totalWorkingDays = 0;
         int totalPresentDays = 0;
-        double totalWorkHours = 0.0;
+        double totalWorkHours = 0.0; // Still calculated internally, though not explicitly in DTO constructor/setter for reportDto
 
         // Create a map for efficient lookup of attendance records by date
         Map<LocalDate, Attendance> attendanceMap = attendances.stream()
@@ -176,7 +176,7 @@ public class AttendanceReportServiceImpl implements AttendanceReportService {
                         totalPresentDays++; // Count as a present day
                         totalWorkHours += attendance.getWorkHours(); // Add work hours
                     } else if (attendance.getStatus() == AttendanceStatus.HALF_DAY) {
-                        // HALF_DAY contributes to work hours, but not counted as a full 'present day'
+                        // HALF_DAY contributes to work hours, but is not counted as a full 'present day'
                         totalWorkHours += attendance.getWorkHours();
                     }
                     // ABSENT, ABNORMAL, or PENDING without clock-out will implicitly be absent for day count
@@ -197,11 +197,14 @@ public class AttendanceReportServiceImpl implements AttendanceReportService {
         reportDto.setId(currentReportId.getAndIncrement());
 
         reportDto.setEmployeeId(employeeId);
+        // Assuming employeeName is not directly set on AttendanceReportDto based on your DTO.
+        // If it should be, add reportDto.setEmployeeName(employeeName);
 
         reportDto.setStartDate(startDate);
         reportDto.setEndDate(endDate);
         reportDto.setTotalPresent(totalPresentDays);
         reportDto.setTotalAbsent(totalAbsentDays);
+        reportDto.setTotalWorkingDays(totalWorkingDays); // <-- THIS WAS THE MISSING LINE!
 
         reportDto.setType(type);
         return reportDto;

@@ -79,7 +79,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponseEntity> exceptionHandler(
             Exception ex, WebRequest request
     ){
-        HttpStatus status = HttpStatus.NOT_FOUND;
+        HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
         ErrorResponseEntity errorResponse = new ErrorResponseEntity(
                 LocalTime.now(),
                 status.value(),

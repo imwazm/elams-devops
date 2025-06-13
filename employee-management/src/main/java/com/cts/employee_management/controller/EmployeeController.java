@@ -62,7 +62,7 @@ public class EmployeeController {
         return employeeService.demoteEmployee(id);
     }
 
-    @PostMapping("{id}/delete")
+    @DeleteMapping("{id}/delete")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteEmployee(@PathVariable Long id){
         employeeService.deleteEmployee(id);

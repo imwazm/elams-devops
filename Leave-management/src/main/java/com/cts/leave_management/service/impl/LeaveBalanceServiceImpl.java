@@ -38,27 +38,25 @@ public class LeaveBalanceServiceImpl implements LeaveBalanceService {
     @Override
     @Transactional
     public LeaveBalanceResponseDto addLeaveBalance(LeaveBalanceRequestDto leaveBalanceDto) {
-        logger.info("Adding new leave balance for employee ID: {}", leaveBalanceDto.getEmployeeId());
+        logger.info("Attempting to add/update leave balance for employee ID: {}", leaveBalanceDto.getEmployeeId());
         Employee employee = employeeRepository.findById(leaveBalanceDto.getEmployeeId())
                 .orElseThrow(() -> new ResourceNotFoundException("Employee with id " + leaveBalanceDto.getEmployeeId() + " not found"));
-
 
         Optional<LeaveBalance> existingBalance = leaveBalanceRepository.findByEmployeeAndLeaveType(employee, leaveBalanceDto.getLeaveType());
 
         LeaveBalance leaveBalance;
         if (existingBalance.isPresent()) {
-
             leaveBalance = existingBalance.get();
             leaveBalance.setBalance(leaveBalanceDto.getBalance());
-            logger.warn("Leave balance of type {} already exists for employee {}. Updating balance.", leaveBalanceDto.getLeaveType(), employee.getEmployeeName());
+            logger.warn("Leave balance of type {} already exists for employee {}. Updating balance to {}.", leaveBalanceDto.getLeaveType(), employee.getEmployeeName(), leaveBalanceDto.getBalance());
         } else {
-
             leaveBalance = modelMapper.map(leaveBalanceDto, LeaveBalance.class);
             leaveBalance.setEmployee(employee);
+            logger.info("Creating new leave balance for employee ID: {} with type: {} and balance: {}", employee.getId(), leaveBalanceDto.getLeaveType(), leaveBalanceDto.getBalance());
         }
 
         LeaveBalance savedLeaveBalance = leaveBalanceRepository.save(leaveBalance);
-        logger.info("Leave balance added/updated for employee ID: {} with type: {}", savedLeaveBalance.getEmployee().getId(), savedLeaveBalance.getLeaveType());
+        logger.info("Leave balance successfully added/updated for employee ID: {} with type: {}", savedLeaveBalance.getEmployee().getId(), savedLeaveBalance.getLeaveType());
         return mapToResponseDto(savedLeaveBalance);
     }
 
@@ -76,7 +74,7 @@ public class LeaveBalanceServiceImpl implements LeaveBalanceService {
         logger.info("Fetching leave balance with ID: {}", id);
         LeaveBalance leaveBalance = leaveBalanceRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Leave balance with id " + id + " not found"));
-        logger.info("Found leave balance for ID: {}", id);
+        logger.info("Successfully found leave balance for ID: {}", id);
         return mapToResponseDto(leaveBalance);
     }
 
@@ -123,15 +121,13 @@ public class LeaveBalanceServiceImpl implements LeaveBalanceService {
                 .orElseThrow(() -> new ResourceNotFoundException("Leave balance of type " + leaveType + " not found for employee " + employeeId));
 
         if (isApproved) {
-
             if (leaveBalance.getBalance() < days) {
-                logger.error("Insufficient leave balance for employee ID: {} for leave type {}", employeeId, leaveType);
-                throw new IllegalArgumentException("Insufficient leave balance for " + leaveType.name());
+                logger.error("Insufficient leave balance for employee ID: {} for leave type {}. Requested: {}, Available: {}", employeeId, leaveType, days, leaveBalance.getBalance());
+                throw new IllegalArgumentException("Insufficient leave balance for " + leaveType.name() + ". Requested: " + days + ", Available: " + leaveBalance.getBalance());
             }
             leaveBalance.setBalance(leaveBalance.getBalance() - days);
             logger.info("Deducted {} days from {} leave for employee ID: {}. New balance: {}", days, leaveType, employeeId, leaveBalance.getBalance());
         } else {
-
             leaveBalance.setBalance(leaveBalance.getBalance() + days);
             logger.info("Added back {} days to {} leave for employee ID: {}. New balance: {}", days, leaveType, employeeId, leaveBalance.getBalance());
         }
@@ -142,7 +138,7 @@ public class LeaveBalanceServiceImpl implements LeaveBalanceService {
 
     @Override
     public void deleteLeaveBalance(Long id) {
-        logger.info("Deleting leave balance with ID: {}", id);
+        logger.info("Attempting to delete leave balance with ID: {}", id);
         if (!leaveBalanceRepository.existsById(id)) {
             logger.error("Leave balance with ID {} not found for deletion.", id);
             throw new ResourceNotFoundException("Leave balance with id " + id + " not found for deletion");
@@ -157,7 +153,6 @@ public class LeaveBalanceServiceImpl implements LeaveBalanceService {
         logger.info("Initializing leave balances for new employee with ID: {}", employeeId);
         Employee employee = employeeRepository.findById(employeeId)
                 .orElseThrow(() -> new ResourceNotFoundException("Employee with id " + employeeId + " not found"));
-
 
         List<LeaveType> leaveTypesToInitialize = Arrays.asList(
                 LeaveType.CASUAL_LEAVE,
@@ -211,6 +206,23 @@ public class LeaveBalanceServiceImpl implements LeaveBalanceService {
             }
         }
         logger.info("Finished initializing leave balances for employee ID: {}", employeeId);
+    }
+
+    @Override
+    public void checkSufficientLeaveBalance(Long employeeId, LeaveType leaveType, int days) {
+        logger.info("Checking sufficient leave balance for employee ID: {}, Leave Type: {}, Days: {}", employeeId, leaveType, days);
+
+        Employee employee = employeeRepository.findById(employeeId)
+                .orElseThrow(() -> new ResourceNotFoundException("Employee with id " + employeeId + " not found"));
+
+        LeaveBalance leaveBalance = leaveBalanceRepository.findByEmployeeAndLeaveType(employee, leaveType)
+                .orElseThrow(() -> new ResourceNotFoundException("Leave balance of type " + leaveType + " not found for employee " + employeeId));
+
+        if (leaveBalance.getBalance() < days) {
+            logger.warn("Insufficient leave balance for employee ID: {} for leave type {}. Requested: {}, Available: {}", employeeId, leaveType, days, leaveBalance.getBalance());
+            throw new IllegalArgumentException("Insufficient leave balance for " + leaveType.name() + ". Available: " + leaveBalance.getBalance() + ", Requested: " + days);
+        }
+        logger.info("Sufficient leave balance found for employee ID: {} for leave type {}. Available: {}", employeeId, leaveType, leaveBalance.getBalance());
     }
 
     private LeaveBalanceResponseDto mapToResponseDto(LeaveBalance leaveBalance) {

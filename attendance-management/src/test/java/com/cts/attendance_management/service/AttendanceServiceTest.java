@@ -139,8 +139,8 @@ public class AttendanceServiceTest {
         Long id = 1L;
         when(attendanceRepository.findById(id))
                 .thenReturn(Optional.of(savedClockOutAttendance));
-
-        assertThat(attendanceService.findAttendanceById(id), is(expectedClockOutAttendanceResponse));
+        AttendanceResponseDto res = attendanceService.findAttendanceById(id);
+        assertThat(res, is(expectedClockOutAttendanceResponse));
     }
 
     @Test

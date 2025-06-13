@@ -106,7 +106,9 @@ public class AttendanceServiceImpl implements AttendanceService {
             throw new ResourceNotFoundException(msg);
         }
         logger.info("Attendance with id "+id+" Found");
-        return modelMapper.map(savedAttendance.get(), AttendanceResponseDto.class);
+        AttendanceResponseDto mappedDto = modelMapper.map(savedAttendance.get(), AttendanceResponseDto.class);
+        mappedDto.setEmployeeId(savedAttendance.get().getEmployee().getId());
+        return mappedDto;
     }
 
     @Override

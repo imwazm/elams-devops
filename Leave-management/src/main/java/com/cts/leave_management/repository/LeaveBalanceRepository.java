@@ -1,6 +1,5 @@
 package com.cts.leave_management.repository;
 
-import com.cts.leave_management.entity.Employee;
 import com.cts.leave_management.entity.LeaveBalance;
 import com.cts.leave_management.entity.enums.LeaveType;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -13,7 +12,7 @@ import java.util.Optional;
 public interface LeaveBalanceRepository extends JpaRepository<LeaveBalance, Long> {
 
 
-    List<LeaveBalance> findByEmployee(Employee employee);
+    List<LeaveBalance> findByEmployeeId(Long employeeId);
 
-    Optional<LeaveBalance> findByEmployeeAndLeaveType(Employee employee, LeaveType leaveType);
+    Optional<LeaveBalance> findByEmployeeIdAndLeaveType(Long employeeId, LeaveType leaveType);
 }

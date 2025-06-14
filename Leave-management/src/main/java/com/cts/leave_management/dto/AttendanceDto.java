@@ -18,5 +18,5 @@ public class AttendanceDto {
     private double workHours;
     private LocalDate date;
     private AttendanceStatus status;
-    private Employee employee;
+    private Long employeeId;
 }

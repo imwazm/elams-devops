@@ -2,14 +2,12 @@ package com.cts.leave_management.service.impl;
 
 import com.cts.leave_management.dto.LeaveRequestDto;
 import com.cts.leave_management.dto.LeaveRequestResponseDto;
-import com.cts.leave_management.entity.Employee;
 import com.cts.leave_management.entity.LeaveRequest;
 import com.cts.leave_management.entity.enums.LeaveRequestStatus;
 import com.cts.leave_management.entity.enums.LeaveType;
 import com.cts.leave_management.exception.ResourceNotFoundException;
 import com.cts.leave_management.exception.LeaveBalanceException;
 import com.cts.leave_management.exception.InvalidDateRangeException;
-import com.cts.leave_management.repository.EmployeeRepository;
 import com.cts.leave_management.repository.LeaveRequestRepository;
 import com.cts.leave_management.service.LeaveBalanceService;
 import com.cts.leave_management.service.LeaveRequestService;
@@ -20,19 +18,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
 public class LeaveRequestServiceImpl implements LeaveRequestService {
 
     @Autowired
     private LeaveRequestRepository leaveRequestRepository;
-
-    @Autowired
-    private EmployeeRepository employeeRepository;
 
     @Autowired
     private ModelMapper modelMapper;
@@ -62,19 +55,17 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
     @Override
     @Transactional
     public LeaveRequestDto createLeaveRequest(LeaveRequestDto leaveRequestDto) {
-        Employee employee = employeeRepository.findById(leaveRequestDto.getEmployeeId())
-                .orElseThrow(() -> new ResourceNotFoundException("Employee not found with ID: " + leaveRequestDto.getEmployeeId()));
 
         LeaveRequest leaveRequest = modelMapper.map(leaveRequestDto, LeaveRequest.class);
         leaveRequest.setLeaveType(LeaveType.valueOf(leaveRequestDto.getLeaveType()));
         leaveRequest.setStatus(LeaveRequestStatus.PENDING);
-        leaveRequest.setEmployee(employee);
+        leaveRequest.setEmployeeId(leaveRequestDto.getEmployeeId());
 
         int calculatedDays = calculateWorkingDays(leaveRequest.getStartDate(), leaveRequest.getEndDate());
 
         try {
             leaveBalanceService.checkSufficientLeaveBalance(
-                    employee.getId(),
+                    leaveRequest.getEmployeeId(),
                     leaveRequest.getLeaveType(),
                     calculatedDays
             );
@@ -101,14 +92,14 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
 
         if (status == LeaveRequestStatus.APPROVED && oldStatus != LeaveRequestStatus.APPROVED) {
             leaveBalanceService.adjustLeaveBalance(
-                    updatedLeaveRequest.getEmployee().getId(),
+                    updatedLeaveRequest.getEmployeeId(),
                     updatedLeaveRequest.getLeaveType(),
                     calculatedDays,
                     true
             );
         } else if (status != LeaveRequestStatus.APPROVED && oldStatus == LeaveRequestStatus.APPROVED) {
             leaveBalanceService.adjustLeaveBalance(
-                    updatedLeaveRequest.getEmployee().getId(),
+                    updatedLeaveRequest.getEmployeeId(),
                     updatedLeaveRequest.getLeaveType(),
                     calculatedDays,
                     false
@@ -142,20 +133,18 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
 
     @Override
     public List<LeaveRequestResponseDto> getLeaveRequestsByStatusAndEmployee(LeaveRequestStatus status, Long employeeId) {
-        Employee employee = employeeRepository.findById(employeeId)
-                .orElseThrow(() -> new ResourceNotFoundException("Employee not found with ID: " + employeeId));
+        //TODO: check for employee existence
 
-        return leaveRequestRepository.findByStatusAndEmployee(status, employee).stream()
+        return leaveRequestRepository.findByStatusAndEmployeeId(status, employeeId).stream()
                 .map(this::convertToResponseDto)
                 .collect(Collectors.toList());
     }
 
     @Override
     public List<LeaveRequestResponseDto> getLeaveRequestsByEmployee(Long employeeId) {
-        Employee employee = employeeRepository.findById(employeeId)
-                .orElseThrow(() -> new ResourceNotFoundException("Employee not found with ID: " + employeeId));
+        //TODO: check for employee existence
 
-        return leaveRequestRepository.findByEmployee(employee).stream()
+        return leaveRequestRepository.findByEmployeeId(employeeId).stream()
                 .map(this::convertToResponseDto)
                 .collect(Collectors.toList());
     }
@@ -170,7 +159,7 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
 
         if (leaveRequest.getStatus() == LeaveRequestStatus.APPROVED) {
             leaveBalanceService.adjustLeaveBalance(
-                    leaveRequest.getEmployee().getId(),
+                    leaveRequest.getEmployeeId(),
                     leaveRequest.getLeaveType(),
                     calculatedDays,
                     false
@@ -181,18 +170,11 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
 
     private LeaveRequestDto convertToDto(LeaveRequest leaveRequest) {
         LeaveRequestDto leaveRequestDto = modelMapper.map(leaveRequest, LeaveRequestDto.class);
-        if (leaveRequest.getEmployee() != null) {
-            leaveRequestDto.setEmployeeId(leaveRequest.getEmployee().getId());
-        }
-        return leaveRequestDto;
+       return leaveRequestDto;
     }
 
     private LeaveRequestResponseDto convertToResponseDto(LeaveRequest leaveRequest) {
         LeaveRequestResponseDto responseDto = modelMapper.map(leaveRequest, LeaveRequestResponseDto.class);
-        if (leaveRequest.getEmployee() != null) {
-            responseDto.setEmployeeId(leaveRequest.getEmployee().getId());
-            responseDto.setEmployeeName(leaveRequest.getEmployee().getEmployeeName());
-        }
         return responseDto;
     }
 }

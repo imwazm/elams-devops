@@ -2,12 +2,10 @@ package com.cts.leave_management.service;
 
 import com.cts.leave_management.dto.LeaveBalanceRequestDto;
 import com.cts.leave_management.dto.LeaveBalanceResponseDto;
-import com.cts.leave_management.entity.Employee;
 import com.cts.leave_management.entity.LeaveBalance;
 import com.cts.leave_management.entity.enums.LeaveType;
 import com.cts.leave_management.entity.enums.Role;
 import com.cts.leave_management.exception.ResourceNotFoundException;
-import com.cts.leave_management.repository.EmployeeRepository;
 import com.cts.leave_management.repository.LeaveBalanceRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

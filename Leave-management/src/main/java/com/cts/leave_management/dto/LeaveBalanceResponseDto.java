@@ -13,5 +13,4 @@ public class LeaveBalanceResponseDto {
     private LeaveType leaveType;
     private int balance;
     private Long employeeId;
-    private String employeeName;
 }

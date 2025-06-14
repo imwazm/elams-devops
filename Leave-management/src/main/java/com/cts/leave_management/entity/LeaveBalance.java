@@ -20,8 +20,5 @@ public class LeaveBalance {
     @Enumerated(EnumType.STRING)
     private LeaveType leaveType;
     private int balance;
-
-    @ManyToOne
-    @JoinColumn
-    private Employee employee;
+    private Long employeeId;
 }

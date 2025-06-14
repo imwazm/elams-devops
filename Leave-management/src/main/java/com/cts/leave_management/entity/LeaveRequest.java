@@ -28,8 +28,5 @@ public class LeaveRequest {
     @Enumerated(EnumType.STRING)
     private LeaveRequestStatus status;
     private String reason;
-
-    @ManyToOne
-    @JoinColumn(name = "employeeId")
-    private Employee employee;
+    private Long employeeId;
 }

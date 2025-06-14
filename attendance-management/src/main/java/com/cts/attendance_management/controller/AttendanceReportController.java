@@ -36,11 +36,6 @@ public class AttendanceReportController {
     // --- End Exception Handlers ---
 
 
-    @GetMapping
-    public ResponseEntity<List<AttendanceReportDto>> getAllReports() {
-        return ResponseEntity.ok(attendanceReportService.getAllReports());
-    }
-
     @GetMapping("/employee/{employeeId}") // Path for getting all reports for a specific employee
     public ResponseEntity<List<AttendanceReportDto>> getReportsByEmployee(@PathVariable Long employeeId) {
         return ResponseEntity.ok(attendanceReportService.getReportsByEmployee(employeeId));

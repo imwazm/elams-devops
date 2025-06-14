@@ -30,8 +30,6 @@ public class AttendanceServiceImpl implements AttendanceService {
 
     @Autowired
     ModelMapper modelMapper;
-    @Autowired
-    private EmployeeRepository employeeRepository;
 
     @Override
     public AttendanceResponseDto clockIn(AttendanceClockInRequestDto attendanceClockInRequestDto) {
@@ -45,14 +43,12 @@ public class AttendanceServiceImpl implements AttendanceService {
             throw new AttendanceRegisterException(msg);
         }
         Attendance attendance = modelMapper.map(attendanceClockInRequestDto, Attendance.class);
-        Employee employee = findEmployeeByIdHelper(attendanceClockInRequestDto.getEmployeeId());
-        attendance.setEmployee(employee);
+        //TODO: check for employee existance
         Attendance savedAttendance = attendanceRepository.save(attendance);
         String msg = "Employee with id "+ attendanceClockInRequestDto.getEmployeeId()
                 +" has clocked in at " + attendanceClockInRequestDto.getClockInTime();
         logger.info(msg);
         AttendanceResponseDto mappedDto =  modelMapper.map(savedAttendance, AttendanceResponseDto.class);
-        mappedDto.setEmployeeId(attendanceClockInRequestDto.getEmployeeId());
         return mappedDto;
     }
 
@@ -105,7 +101,6 @@ public class AttendanceServiceImpl implements AttendanceService {
         }
         logger.info("Attendance with id "+id+" Found");
         AttendanceResponseDto mappedDto = modelMapper.map(savedAttendance.get(), AttendanceResponseDto.class);
-        mappedDto.setEmployeeId(savedAttendance.get().getEmployee().getId());
         return mappedDto;
     }
 
@@ -113,11 +108,8 @@ public class AttendanceServiceImpl implements AttendanceService {
     public List<AttendanceResponseDto> findAllAttendance() {
         logger.info("Fetching all attendances");
         return attendanceRepository.findAll()
-                .stream().map((a) -> {
-                    AttendanceResponseDto mapped = modelMapper.map(a, AttendanceResponseDto.class);
-                    mapped.setEmployeeId(a.getEmployee().getId());
-                    return mapped;
-                }).toList();
+                .stream().map((a) -> modelMapper.map(a, AttendanceResponseDto.class))
+                .toList();
     }
 
     private double calculateWorkHours(Temporal clockInTime, Temporal clockOutTime){
@@ -138,12 +130,5 @@ public class AttendanceServiceImpl implements AttendanceService {
         } else {
             return AttendanceStatus.ABNORMAL;
         }
-    }
-
-    private Employee findEmployeeByIdHelper(Long id){
-        logger.info("Searching for employee with ID: " + id);
-        return employeeRepository.findById(id).orElseThrow(
-                ()->new ResourceNotFoundException("Employee with id "+id+" not found")
-        );
     }
 }

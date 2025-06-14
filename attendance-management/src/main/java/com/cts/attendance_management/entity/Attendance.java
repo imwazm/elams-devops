@@ -24,8 +24,5 @@ public class Attendance {
     private LocalDate date;
     @Enumerated(EnumType.STRING)
     private AttendanceStatus status;
-
-    @ManyToOne
-    @JoinColumn
-    private Employee employee;
+    private Long employeeId;
 }

@@ -1,6 +1,5 @@
 package com.cts.leave_management.dto;
 
-import com.cts.leave_management.entity.Employee;
 import com.cts.leave_management.entity.enums.AttendanceReportType;
 import lombok.AllArgsConstructor;
 import lombok.Data;

@@ -7,8 +7,6 @@ import java.time.LocalDate;
 import java.util.List;
 
 public interface AttendanceReportService {
-    void updateAttendanceReport(Attendance attendance);
-    List<AttendanceReportDto> getAllReports();
     List<AttendanceReportDto> getReportsByEmployee(Long employeeId);
     List<AttendanceReportDto> getReportsByEmployeeAndType(Long employeeId, String type);
     AttendanceReportDto getCustomReportByEmployee(Long employeeId, LocalDate startDate, LocalDate endDate);

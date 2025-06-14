@@ -47,7 +47,6 @@ public class AttendanceServiceTest {
     private AttendanceResponseDto expectedClockInAttendanceResponse, expectedClockOutAttendanceResponse,
             expectedClockOutWithTotalHoursAttendanceResponse;
 
-    private Employee employee;
 
 
     // --- LocalTime (Time without date or timezone) ---
@@ -74,16 +73,14 @@ public class AttendanceServiceTest {
 
     @BeforeEach
     void setup(){
-        Employee employee = new Employee(1L, "Akram","akram@sample.com",
-                null, null, null, null);
         attendanceClockInWithoutClockInOutRequestDto = new AttendanceClockInRequestDto(null, null, 1L);
         attendanceClockOutWithoutClockInOutRequestDto = new AttendanceClockOutRequestDto(null, null, 1L);
         attendanceClockInRequestDto = new AttendanceClockInRequestDto(MORNING_8_AM, TODAY, 1L);
         attendanceClockOutRequestDto = new AttendanceClockOutRequestDto(EVENING_6_PM, TODAY, 1L);
         savedClockInAttendance = new Attendance(1L, MORNING_8_AM, null,
-                0, TODAY, null, employee);
+                0, TODAY, null, 1L);
         savedClockOutAttendance = new Attendance(1L, MORNING_8_AM, EVENING_6_PM,
-                10.0, TODAY, AttendanceStatus.PRESENT, employee);
+                10.0, TODAY, AttendanceStatus.PRESENT, 1L);
         expectedClockInAttendanceResponse = new AttendanceResponseDto(1L, MORNING_8_AM, null,
                 0, TODAY, null, 1L);
         expectedClockOutAttendanceResponse = new AttendanceResponseDto(1L, MORNING_8_AM, EVENING_6_PM,

@@ -26,52 +26,22 @@ public class AttendanceReportServiceImpl implements AttendanceReportService {
     @Autowired
     private AttendanceRepository attendanceRepository;
 
-    @Override
-    public void updateAttendanceReport(Attendance attendance) {
-        // Reports are generated on-demand. This method might be for a future feature or not directly used in reports.
-    }
-
-    @Override
-    public List<AttendanceReportDto> getAllReports() {
-        List<AttendanceReportDto> reports = new ArrayList<>();
-        List<Employee> employees = employeeRepository.findAll();
-
-        LocalDate today = LocalDate.now();
-        LocalDate startOfYear = today.with(TemporalAdjusters.firstDayOfYear());
-        LocalDate endOfYear = today.with(TemporalAdjusters.lastDayOfYear());
-        List<Attendance> allAttendanceForYear = attendanceRepository.findByDateBetween(startOfYear, endOfYear);
-
-        Map<Long, List<Attendance>> attendanceByEmployee = allAttendanceForYear.stream()
-                .collect(Collectors.groupingBy(att -> att.getEmployee().getId()));
-
-        AtomicLong currentReportId = new AtomicLong(1); // Use AtomicLong for sequential ID across all reports
-        for (Employee employee : employees) {
-            List<Attendance> employeeAttendances = attendanceByEmployee.getOrDefault(employee.getId(), new ArrayList<>());
-            // Pass the same AtomicLong to generateReportsForEmployee so IDs continue sequentially
-            reports.addAll(generateReportsForEmployee(employee.getId(), employee.getEmployeeName(), employeeAttendances, currentReportId));
-        }
-        return reports;
-    }
 
     @Override
     public List<AttendanceReportDto> getReportsByEmployee(Long employeeId) {
-        Employee employee = employeeRepository.findById(employeeId)
-                .orElseThrow(() -> new ResourceNotFoundException("Employee not found with id: " + employeeId));
-
-        // For a single employee's report, fetch all attendance for the year first
+        //TODO: check for employee existance
         LocalDate today = LocalDate.now();
         LocalDate startOfYear = today.with(TemporalAdjusters.firstDayOfYear());
         LocalDate endOfYear = today.with(TemporalAdjusters.lastDayOfYear());
         List<Attendance> employeeAttendances = attendanceRepository.findByEmployeeIdAndDateBetween(employeeId, startOfYear, endOfYear);
 
         // Reset ID counter for this specific employee's report batch, starting from 1
-        return generateReportsForEmployee(employeeId, employee.getEmployeeName(), employeeAttendances, new AtomicLong(1));
+        return generateReportsForEmployee(employeeId,  employeeAttendances, new AtomicLong(1));
     }
 
     @Override
     public List<AttendanceReportDto> getReportsByEmployeeAndType(Long employeeId, String type) {
-        Employee employee = employeeRepository.findById(employeeId)
-                .orElseThrow(() -> new ResourceNotFoundException("Employee not found with id: " + employeeId));
+        //TODO: check for employee existence
 
         AttendanceReportType reportType;
         try {
@@ -88,13 +58,13 @@ public class AttendanceReportServiceImpl implements AttendanceReportService {
 
         switch (reportType) {
             case WEEKLY:
-                reports.add(generateWeeklyReport(employeeId, employee.getEmployeeName(), today, currentReportId));
+                reports.add(generateWeeklyReport(employeeId, today, currentReportId));
                 break;
             case MONTHLY:
-                reports.add(generateMonthlyReport(employeeId, employee.getEmployeeName(), today, currentReportId));
+                reports.add(generateMonthlyReport(employeeId, today, currentReportId));
                 break;
             case YEARLY:
-                reports.add(generateYearlyReport(employeeId, employee.getEmployeeName(), today, currentReportId));
+                reports.add(generateYearlyReport(employeeId, today, currentReportId));
                 break;
         }
         return reports;
@@ -102,8 +72,7 @@ public class AttendanceReportServiceImpl implements AttendanceReportService {
 
     @Override
     public AttendanceReportDto getCustomReportByEmployee(Long employeeId, LocalDate startDate, LocalDate endDate) {
-        Employee employee = employeeRepository.findById(employeeId)
-                .orElseThrow(() -> new ResourceNotFoundException("Employee not found with id: " + employeeId));
+        //TODO: check for employee existance
 
         List<Attendance> attendances = attendanceRepository.findByEmployeeIdAndDateBetween(employeeId, startDate, endDate);
 
@@ -113,43 +82,43 @@ public class AttendanceReportServiceImpl implements AttendanceReportService {
         // Assuming 'CUSTOM' is added to AttendanceReportType enum if needed.
         // For now, setting it to a default or null if not directly in enum and not critical for DTO.
         // If your DTO requires it to be non-null and CUSTOM is not in enum, you might need to adjust.
-        return calculateReport(attendances, employeeId, employee.getEmployeeName(), startDate, endDate, AttendanceReportType.CUSTOM, currentReportId);
+        return calculateReport(attendances, employeeId, startDate, endDate, AttendanceReportType.CUSTOM, currentReportId);
     }
 
-    private List<AttendanceReportDto> generateReportsForEmployee(Long employeeId, String employeeName, List<Attendance> allEmployeeAttendances, AtomicLong currentReportId) {
+    private List<AttendanceReportDto> generateReportsForEmployee(Long employeeId, List<Attendance> allEmployeeAttendances, AtomicLong currentReportId) {
         List<AttendanceReportDto> reports = new ArrayList<>();
         LocalDate today = LocalDate.now();
 
         // Pass the same AtomicLong to each report generation method
-        reports.add(generateWeeklyReport(employeeId, employeeName, today, currentReportId));
-        reports.add(generateMonthlyReport(employeeId, employeeName, today, currentReportId));
-        reports.add(generateYearlyReport(employeeId, employeeName, today, currentReportId));
+        reports.add(generateWeeklyReport(employeeId, today, currentReportId));
+        reports.add(generateMonthlyReport(employeeId, today, currentReportId));
+        reports.add(generateYearlyReport(employeeId, today, currentReportId));
 
         return reports;
     }
 
-    private AttendanceReportDto generateWeeklyReport(Long employeeId, String employeeName, LocalDate date, AtomicLong currentReportId) {
+    private AttendanceReportDto generateWeeklyReport(Long employeeId, LocalDate date, AtomicLong currentReportId) {
         LocalDate startOfWeek = date.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
         LocalDate endOfWeek = date.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
         List<Attendance> attendances = attendanceRepository.findByEmployeeIdAndDateBetween(employeeId, startOfWeek, endOfWeek);
-        return calculateReport(attendances, employeeId, employeeName, startOfWeek, endOfWeek, AttendanceReportType.WEEKLY, currentReportId);
+        return calculateReport(attendances, employeeId, startOfWeek, endOfWeek, AttendanceReportType.WEEKLY, currentReportId);
     }
 
-    private AttendanceReportDto generateMonthlyReport(Long employeeId, String employeeName, LocalDate date, AtomicLong currentReportId) {
+    private AttendanceReportDto generateMonthlyReport(Long employeeId, LocalDate date, AtomicLong currentReportId) {
         LocalDate startOfMonth = date.with(TemporalAdjusters.firstDayOfMonth());
         LocalDate endOfMonth = date.with(TemporalAdjusters.lastDayOfMonth());
         List<Attendance> attendances = attendanceRepository.findByEmployeeIdAndDateBetween(employeeId, startOfMonth, endOfMonth);
-        return calculateReport(attendances, employeeId, employeeName, startOfMonth, endOfMonth, AttendanceReportType.MONTHLY, currentReportId);
+        return calculateReport(attendances, employeeId, startOfMonth, endOfMonth, AttendanceReportType.MONTHLY, currentReportId);
     }
 
-    private AttendanceReportDto generateYearlyReport(Long employeeId, String employeeName, LocalDate date, AtomicLong currentReportId) {
+    private AttendanceReportDto generateYearlyReport(Long employeeId, LocalDate date, AtomicLong currentReportId) {
         LocalDate startOfYear = date.with(TemporalAdjusters.firstDayOfYear());
         LocalDate endOfYear = date.with(TemporalAdjusters.lastDayOfYear());
         List<Attendance> attendances = attendanceRepository.findByEmployeeIdAndDateBetween(employeeId, startOfYear, endOfYear);
-        return calculateReport(attendances, employeeId, employeeName, startOfYear, endOfYear, AttendanceReportType.YEARLY, currentReportId);
+        return calculateReport(attendances, employeeId, startOfYear, endOfYear, AttendanceReportType.YEARLY, currentReportId);
     }
 
-    private AttendanceReportDto calculateReport(List<Attendance> attendances, Long employeeId, String employeeName,
+    private AttendanceReportDto calculateReport(List<Attendance> attendances, Long employeeId,
                                                 LocalDate startDate, LocalDate endDate, AttendanceReportType type, AtomicLong currentReportId) {
 
         int totalWorkingDays = 0;

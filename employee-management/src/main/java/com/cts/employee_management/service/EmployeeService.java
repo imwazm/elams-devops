@@ -33,4 +33,6 @@ public interface EmployeeService {
     EmployeeResponseDto assignShiftToEmployee(Long employeeId, ShiftType shiftType);
 
     List<EmployeeResponseDto> findEmployeesByShift(ShiftType shiftType);
+
+    boolean checkEmployeeExists(Long id);
 }

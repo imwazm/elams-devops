@@ -89,4 +89,9 @@ public class EmployeeController {
                                                      @RequestParam ShiftType shiftType){
         return employeeService.assignShiftToEmployee(employeeId, shiftType);
     }
+
+    @GetMapping("{id}/exists")
+    public boolean checkEmployeeExists(@PathVariable Long id){
+        return employeeService.checkEmployeeExists(id);
+    }
 }

@@ -199,6 +199,12 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .toList();
     }
 
+    @Override
+    public boolean checkEmployeeExists(Long id) {
+        this.findEmployeeByIdHelper(id);
+        return true;
+    }
+
     private EmployeeResponseDto convertToDto(Employee employee){
         EmployeeResponseDto mappedDto = modelMapper.map(employee, EmployeeResponseDto.class);
         if(employee.getShift()!=null)

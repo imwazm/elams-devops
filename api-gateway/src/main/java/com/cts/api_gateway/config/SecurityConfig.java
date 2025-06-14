@@ -31,7 +31,9 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http)throws Exception{
         http.authorizeHttpRequests(auth -> auth
-                .requestMatchers("api/leave-requests/**").hasAuthority("ADMIN")
+                .requestMatchers("api/employees/add-employee").hasAnyAuthority("ADMIN", "MANAGER")
+                .requestMatchers("api/employees/add-manager").hasAnyAuthority("ADMIN")
+                .requestMatchers("api/employees/add-admin").hasAnyAuthority("ADMIN")
                 .anyRequest().permitAll());
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
         http.formLogin(f -> f.disable());

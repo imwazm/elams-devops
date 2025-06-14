@@ -32,7 +32,6 @@ public class AuthController {
     @PostMapping("login")
     public ResponseEntity<Map<String, String>>login(@RequestBody UserLoginDto user){
         BCryptPasswordEncoder encoder  = new BCryptPasswordEncoder();
-        String val = encoder.encode(user.getPassword());
         try{
             Authentication authentication =  authManager
                     .authenticate(new UsernamePasswordAuthenticationToken(

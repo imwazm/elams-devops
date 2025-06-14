@@ -1,6 +1,5 @@
 package com.cts.attendance_management.dto;
 
-import com.cts.attendance_management.entity.Employee;
 import com.cts.attendance_management.entity.enums.AttendanceStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;

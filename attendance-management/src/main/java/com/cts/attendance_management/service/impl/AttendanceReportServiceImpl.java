@@ -2,12 +2,10 @@ package com.cts.attendance_management.service.impl;
 
 import com.cts.attendance_management.dto.AttendanceReportDto;
 import com.cts.attendance_management.entity.Attendance;
-import com.cts.attendance_management.entity.Employee;
 import com.cts.attendance_management.entity.enums.AttendanceReportType;
 import com.cts.attendance_management.entity.enums.AttendanceStatus;
 import com.cts.attendance_management.exception.ResourceNotFoundException;
 import com.cts.attendance_management.repository.AttendanceRepository;
-import com.cts.attendance_management.repository.EmployeeRepository;
 import com.cts.attendance_management.service.AttendanceReportService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -27,9 +25,6 @@ public class AttendanceReportServiceImpl implements AttendanceReportService {
 
     @Autowired
     private AttendanceRepository attendanceRepository;
-
-    @Autowired
-    private EmployeeRepository employeeRepository;
 
     @Override
     public void updateAttendanceReport(Attendance attendance) {

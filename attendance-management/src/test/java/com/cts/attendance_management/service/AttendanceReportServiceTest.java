@@ -2,13 +2,11 @@ package com.cts.attendance_management.service;
 
 import com.cts.attendance_management.dto.AttendanceReportDto;
 import com.cts.attendance_management.entity.Attendance;
-import com.cts.attendance_management.entity.Employee;
 import com.cts.attendance_management.entity.enums.AttendanceReportType;
 import com.cts.attendance_management.entity.enums.AttendanceStatus;
 import com.cts.attendance_management.entity.enums.Role;
 import com.cts.attendance_management.exception.ResourceNotFoundException;
 import com.cts.attendance_management.repository.AttendanceRepository;
-import com.cts.attendance_management.repository.EmployeeRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

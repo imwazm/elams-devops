@@ -4,7 +4,6 @@ import com.cts.attendance_management.dto.AttendanceClockInRequestDto;
 import com.cts.attendance_management.dto.AttendanceClockOutRequestDto;
 import com.cts.attendance_management.dto.AttendanceResponseDto;
 import com.cts.attendance_management.entity.Attendance;
-import com.cts.attendance_management.entity.Employee;
 import com.cts.attendance_management.entity.enums.AttendanceStatus;
 import com.cts.attendance_management.exception.AttendanceRegisterException;
 import com.cts.attendance_management.exception.ResourceNotFoundException;

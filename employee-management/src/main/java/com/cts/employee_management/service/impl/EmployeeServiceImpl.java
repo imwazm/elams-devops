@@ -1,5 +1,6 @@
 package com.cts.employee_management.service.impl;
 
+import com.cts.employee_management.client.ApiGatewayClient;
 import com.cts.employee_management.dto.EmployeeAuthDto;
 import com.cts.employee_management.dto.EmployeeRequestDto;
 import com.cts.employee_management.dto.EmployeeResponseDto;
@@ -17,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -32,13 +34,18 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Autowired
     ModelMapper modelMapper;
 
+    @Autowired
+    ApiGatewayClient apiGatewayClient;
+
     private static final Logger logger = LoggerFactory.getLogger(EmployeeServiceImpl.class);
 
     @Override
+    @Transactional
     public EmployeeResponseDto addEmployee(EmployeeRequestDto employeeDto) {
         Employee newEmployee = modelMapper.map(employeeDto, Employee.class);
         newEmployee.setRole(Role.EMPLOYEE);
         Employee savedEmployee = employeeRepository.save(newEmployee);
+        this.createAuth(savedEmployee.getId(), savedEmployee.getEmail());
         logger.info("New employee added with ID: " + savedEmployee.getId());
         return convertToDto(savedEmployee);
     }
@@ -48,6 +55,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         Employee newEmployee = modelMapper.map(employeeDto, Employee.class);
         newEmployee.setRole(Role.MANAGER);
         Employee savedEmployee = employeeRepository.save(newEmployee);
+        this.createAuth(savedEmployee.getId(), savedEmployee.getEmail());
         logger.info("New manager added with ID: " + savedEmployee.getId());
         return convertToDto(savedEmployee);
     }
@@ -57,6 +65,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         Employee newEmployee = modelMapper.map(employeeDto, Employee.class);
         newEmployee.setRole(Role.ADMIN);
         Employee savedEmployee = employeeRepository.save(newEmployee);
+        this.createAuth(savedEmployee.getId(), savedEmployee.getEmail());
         logger.info("New admin added with ID: " + savedEmployee.getId());
         return convertToDto(savedEmployee);
     }
@@ -222,8 +231,8 @@ public class EmployeeServiceImpl implements EmployeeService {
         return mappedDto;
     }
 
-    private void createAuth(String email){
-
+    private void createAuth(Long employeeId, String email){
+        apiGatewayClient.createAuth(employeeId, email);
     }
 
     private Employee findEmployeeByIdHelper(Long id){

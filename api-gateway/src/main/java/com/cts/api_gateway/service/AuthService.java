@@ -2,5 +2,5 @@ package com.cts.api_gateway.service;
 
 public interface AuthService {
 
-    public void createAuth(String email);
+    public void createAuth(Long employeeId, String email);
 }

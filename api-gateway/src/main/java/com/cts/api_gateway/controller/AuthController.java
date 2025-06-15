@@ -28,9 +28,9 @@ public class AuthController {
     @Autowired
     private AuthService authService;
 
-    @PostMapping("create-auth/{email}")
-    public void createAuth(@PathVariable String email){
-        authService.createAuth(email);
+    @PostMapping("create-auth/{employeeId}/{email}")
+    public void createAuth(@PathVariable Long employeeId,  @PathVariable String email){
+        authService.createAuth(employeeId, email);
     }
 
     @PostMapping("login")

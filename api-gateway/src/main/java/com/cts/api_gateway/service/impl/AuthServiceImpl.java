@@ -21,11 +21,10 @@ public class AuthServiceImpl implements AuthService {
     private PasswordEncoder passwordEncoder;
 
     @Override
-    public void createAuth(String email) {
-        EmployeeAuthDto employee = employeeClient.loadEmployeeByEmail(email);
+    public void createAuth(Long employeeId, String email) {
         AuthUser user  = new AuthUser();
-        user.setEmployeeId(employee.getId());
-        user.setPassword(passwordEncoder.encode(employee.getEmail()));
+        user.setEmployeeId(employeeId);
+        user.setPassword(passwordEncoder.encode(email));
         authRepository.save(user);
     }
 }

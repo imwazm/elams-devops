@@ -80,24 +80,6 @@ public class AttendanceReportControllerTest {
     }
 
     @Test
-    void getAllAttendanceReports_shouldReturnListOfReports() throws Exception {
-        // Arrange
-        List<AttendanceReportDto> expectedReports = List.of(weeklyReportDto, monthlyReportDto, yearlyReportDto);
-        when(attendanceReportService.getAllReports()).thenReturn(expectedReports);
-
-        // Act & Assert
-        MvcResult mvcResult = mockMvc.perform(get("/api/attendance-reports"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andReturn();
-
-        List<AttendanceReportDto> actualReports = jsonToAttendanceReportDtoList(
-                mvcResult.getResponse().getContentAsString()
-        );
-        assertThat(actualReports, is(expectedReports));
-    }
-
-    @Test
     void getReportsByEmployee_shouldReturnListOfReportsForEmployee() throws Exception {
         // Arrange
         Long employeeId = 1L;

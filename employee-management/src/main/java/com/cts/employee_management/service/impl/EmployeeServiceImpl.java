@@ -1,5 +1,6 @@
 package com.cts.employee_management.service.impl;
 
+import com.cts.employee_management.dto.EmployeeAuthDto;
 import com.cts.employee_management.dto.EmployeeRequestDto;
 import com.cts.employee_management.dto.EmployeeResponseDto;
 import com.cts.employee_management.entity.Employee;
@@ -203,6 +204,11 @@ public class EmployeeServiceImpl implements EmployeeService {
     public boolean checkEmployeeExists(Long id) {
         this.findEmployeeByIdHelper(id);
         return true;
+    }
+
+    @Override
+    public EmployeeAuthDto findEmployeeForSignup(Long id) {
+        return modelMapper.map(this.findEmployeeByIdHelper(id), EmployeeAuthDto.class);
     }
 
     private EmployeeResponseDto convertToDto(Employee employee){

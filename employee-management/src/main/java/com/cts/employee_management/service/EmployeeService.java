@@ -1,5 +1,6 @@
 package com.cts.employee_management.service;
 
+import com.cts.employee_management.dto.EmployeeAuthDto;
 import com.cts.employee_management.dto.EmployeeRequestDto;
 import com.cts.employee_management.dto.EmployeeResponseDto;
 import com.cts.employee_management.entity.enums.ShiftType;
@@ -35,4 +36,6 @@ public interface EmployeeService {
     List<EmployeeResponseDto> findEmployeesByShift(ShiftType shiftType);
 
     boolean checkEmployeeExists(Long id);
+
+    EmployeeAuthDto findEmployeeForSignup(Long id);
 }

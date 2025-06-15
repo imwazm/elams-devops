@@ -1,5 +1,6 @@
 package com.cts.employee_management.controller;
 
+import com.cts.employee_management.dto.EmployeeAuthDto;
 import com.cts.employee_management.dto.EmployeeRequestDto;
 import com.cts.employee_management.dto.EmployeeResponseDto;
 import com.cts.employee_management.entity.enums.ShiftType;
@@ -50,6 +51,11 @@ public class EmployeeController {
     @GetMapping("{id}")
     public EmployeeResponseDto getEmployeeById(@PathVariable Long id){
         return employeeService.findEmployeeById(id);
+    }
+
+    @GetMapping("signup/{id}")
+    public EmployeeAuthDto getEmployeeForSignup(@PathVariable Long id){
+        return employeeService.findEmployeeForSignup(id);
     }
 
     @PutMapping("{id}/promote")

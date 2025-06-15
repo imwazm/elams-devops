@@ -7,6 +7,7 @@ import com.cts.leave_management.entity.enums.LeaveType;
 import com.cts.leave_management.entity.enums.Role;
 import com.cts.leave_management.exception.ResourceNotFoundException;
 import com.cts.leave_management.repository.LeaveBalanceRepository;
+import feign.FeignException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.modelmapper.ModelMapper;
@@ -32,16 +33,13 @@ public class LeaveBalanceServiceTest {
     @MockitoBean
     private LeaveBalanceRepository leaveBalanceRepository;
 
-    @MockitoBean
-    private EmployeeRepository employeeRepository;
-
     @Autowired
     private LeaveBalanceService leaveBalanceService;
 
     @Autowired
     private ModelMapper modelMapper;
 
-    private Employee employee1;
+    private Long employeeId;
     private LeaveBalance casualLeave, sickLeave, vacationLeave;
     private LeaveBalanceRequestDto casualLeaveRequestDto;
     private LeaveBalanceResponseDto casualLeaveResponseDto;
@@ -50,23 +48,21 @@ public class LeaveBalanceServiceTest {
 
     @BeforeEach
     void setupObject() {
-        employee1 = new Employee(101L, "John Doe", "john.doe@example.com", Role.EMPLOYEE, null, null, null);
-
-        casualLeave = new LeaveBalance(1L, LeaveType.CASUAL_LEAVE, 12, employee1);
-        sickLeave = new LeaveBalance(2L, LeaveType.SICK_LEAVE, 7, employee1);
-        vacationLeave = new LeaveBalance(3L, LeaveType.VACATION_LEAVE, 15, employee1);
+        employeeId = 101L;
+        casualLeave = new LeaveBalance(1L, LeaveType.CASUAL_LEAVE, 12, employeeId);
+        sickLeave = new LeaveBalance(2L, LeaveType.SICK_LEAVE, 7, employeeId);
+        vacationLeave = new LeaveBalance(3L, LeaveType.VACATION_LEAVE, 15, employeeId);
 
         casualLeaveRequestDto = new LeaveBalanceRequestDto(null, LeaveType.CASUAL_LEAVE, 12, 101L);
 
-        casualLeaveResponseDto = new LeaveBalanceResponseDto(1L, LeaveType.CASUAL_LEAVE, 12, 101L, "John Doe");
-        sickLeaveResponseDto = new LeaveBalanceResponseDto(2L, LeaveType.SICK_LEAVE, 7, 101L, "John Doe");
-        vacationLeaveResponseDto = new LeaveBalanceResponseDto(3L, LeaveType.VACATION_LEAVE, 15, 101L, "John Doe");
+        casualLeaveResponseDto = new LeaveBalanceResponseDto(1L, LeaveType.CASUAL_LEAVE, 12, 101L);
+        sickLeaveResponseDto = new LeaveBalanceResponseDto(2L, LeaveType.SICK_LEAVE, 7, 101L);
+        vacationLeaveResponseDto = new LeaveBalanceResponseDto(3L, LeaveType.VACATION_LEAVE, 15, 101L);
     }
 
     @Test
     void addLeaveBalance_shouldReturnSavedLeaveBalance() {
-        when(employeeRepository.findById(anyLong())).thenReturn(Optional.of(employee1));
-        when(leaveBalanceRepository.findByEmployeeAndLeaveType(eq(employee1), eq(LeaveType.CASUAL_LEAVE)))
+        when(leaveBalanceRepository.findByEmployeeIdAndLeaveType(eq(employeeId), eq(LeaveType.CASUAL_LEAVE)))
                 .thenReturn(Optional.empty());
         when(leaveBalanceRepository.save(any(LeaveBalance.class))).thenReturn(casualLeave);
 
@@ -78,12 +74,11 @@ public class LeaveBalanceServiceTest {
 
     @Test
     void addLeaveBalance_shouldUpdateExistingLeaveBalance() {
-        LeaveBalance existingCasualLeave = new LeaveBalance(1L, LeaveType.CASUAL_LEAVE, 10, employee1);
-        LeaveBalance updatedCasualLeave = new LeaveBalance(1L, LeaveType.CASUAL_LEAVE, 12, employee1);
-        LeaveBalanceResponseDto updatedResponseDto = new LeaveBalanceResponseDto(1L, LeaveType.CASUAL_LEAVE, 12, 101L, "John Doe");
+        LeaveBalance existingCasualLeave = new LeaveBalance(1L, LeaveType.CASUAL_LEAVE, 10, employeeId);
+        LeaveBalance updatedCasualLeave = new LeaveBalance(1L, LeaveType.CASUAL_LEAVE, 12, employeeId);
+        LeaveBalanceResponseDto updatedResponseDto = new LeaveBalanceResponseDto(1L, LeaveType.CASUAL_LEAVE, 12, 101L);
 
-        when(employeeRepository.findById(anyLong())).thenReturn(Optional.of(employee1));
-        when(leaveBalanceRepository.findByEmployeeAndLeaveType(eq(employee1), eq(LeaveType.CASUAL_LEAVE)))
+        when(leaveBalanceRepository.findByEmployeeIdAndLeaveType(eq(employeeId), eq(LeaveType.CASUAL_LEAVE)))
                 .thenReturn(Optional.of(existingCasualLeave));
         when(leaveBalanceRepository.save(any(LeaveBalance.class))).thenReturn(updatedCasualLeave);
 
@@ -96,7 +91,6 @@ public class LeaveBalanceServiceTest {
 
     @Test
     void addLeaveBalance_shouldThrowResourceNotFoundException_whenEmployeeNotFound() {
-        when(employeeRepository.findById(anyLong())).thenReturn(Optional.empty());
 
         ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class,
                 () -> leaveBalanceService.addLeaveBalance(casualLeaveRequestDto));
@@ -144,10 +138,9 @@ public class LeaveBalanceServiceTest {
         List<LeaveBalance> employeeBalances = Arrays.asList(casualLeave, sickLeave);
         List<LeaveBalanceResponseDto> expectedDtos = Arrays.asList(casualLeaveResponseDto, sickLeaveResponseDto);
 
-        when(employeeRepository.findById(employee1.getId())).thenReturn(Optional.of(employee1));
-        when(leaveBalanceRepository.findByEmployee(employee1)).thenReturn(employeeBalances);
+        when(leaveBalanceRepository.findByEmployeeId(employeeId)).thenReturn(employeeBalances);
 
-        List<LeaveBalanceResponseDto> actualDtos = leaveBalanceService.findLeaveBalancesByEmployeeId(employee1.getId());
+        List<LeaveBalanceResponseDto> actualDtos = leaveBalanceService.findLeaveBalancesByEmployeeId(employeeId);
 
         assertThat(actualDtos.size(), is(2));
         assertThat(actualDtos, containsInAnyOrder(casualLeaveResponseDto, sickLeaveResponseDto));
@@ -156,25 +149,23 @@ public class LeaveBalanceServiceTest {
     @Test
     void findLeaveBalancesByEmployeeId_shouldThrowResourceNotFoundException_whenEmployeeNotFound() {
         Long nonExistentEmployeeId = 999L;
-        when(employeeRepository.findById(nonExistentEmployeeId)).thenReturn(Optional.empty());
 
-        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class,
+        FeignException exception = assertThrows(FeignException.class,
                 () -> leaveBalanceService.findLeaveBalancesByEmployeeId(nonExistentEmployeeId));
 
         assertThat(exception.getMessage(), containsString("Employee with id " + nonExistentEmployeeId + " not found"));
-        verify(leaveBalanceRepository, never()).findByEmployee(any(Employee.class));
+        verify(leaveBalanceRepository, never()).findByEmployeeId(anyLong());
     }
 
     @Test
     void updateLeaveBalance_shouldReturnUpdatedLeaveBalance() {
         Long id = 1L;
-        LeaveBalance existingLeaveBalance = new LeaveBalance(id, LeaveType.CASUAL_LEAVE, 12, employee1);
-        LeaveBalanceRequestDto updateRequestDto = new LeaveBalanceRequestDto(id, LeaveType.CASUAL_LEAVE, 10, employee1.getId());
-        LeaveBalance updatedLeaveBalanceEntity = new LeaveBalance(id, LeaveType.CASUAL_LEAVE, 10, employee1);
-        LeaveBalanceResponseDto expectedResponseDto = new LeaveBalanceResponseDto(id, LeaveType.CASUAL_LEAVE, 10, employee1.getId(), employee1.getEmployeeName());
+        LeaveBalance existingLeaveBalance = new LeaveBalance(id, LeaveType.CASUAL_LEAVE, 12, employeeId);
+        LeaveBalanceRequestDto updateRequestDto = new LeaveBalanceRequestDto(id, LeaveType.CASUAL_LEAVE, 10, employeeId);
+        LeaveBalance updatedLeaveBalanceEntity = new LeaveBalance(id, LeaveType.CASUAL_LEAVE, 10, employeeId);
+        LeaveBalanceResponseDto expectedResponseDto = new LeaveBalanceResponseDto(id, LeaveType.CASUAL_LEAVE, 10, employeeId);
 
         when(leaveBalanceRepository.findById(id)).thenReturn(Optional.of(existingLeaveBalance));
-        when(employeeRepository.findById(employee1.getId())).thenReturn(Optional.of(employee1));
         when(leaveBalanceRepository.save(any(LeaveBalance.class))).thenReturn(updatedLeaveBalanceEntity);
 
         LeaveBalanceResponseDto actualDto = leaveBalanceService.updateLeaveBalance(id, updateRequestDto);
@@ -198,11 +189,10 @@ public class LeaveBalanceServiceTest {
     @Test
     void updateLeaveBalance_shouldThrowResourceNotFoundException_whenEmployeeNotFoundForUpdate() {
         Long id = 1L;
-        LeaveBalance existingLeaveBalance = new LeaveBalance(id, LeaveType.CASUAL_LEAVE, 12, employee1);
+        LeaveBalance existingLeaveBalance = new LeaveBalance(id, LeaveType.CASUAL_LEAVE, 12, employeeId);
         LeaveBalanceRequestDto updateRequestDto = new LeaveBalanceRequestDto(id, LeaveType.CASUAL_LEAVE, 10, 999L);
 
         when(leaveBalanceRepository.findById(id)).thenReturn(Optional.of(existingLeaveBalance));
-        when(employeeRepository.findById(999L)).thenReturn(Optional.empty());
 
         ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class,
                 () -> leaveBalanceService.updateLeaveBalance(id, updateRequestDto));
@@ -213,16 +203,15 @@ public class LeaveBalanceServiceTest {
 
     @Test
     void adjustLeaveBalance_shouldDeductDays_whenApproved() {
-        LeaveBalance initialCasualLeave = new LeaveBalance(1L, LeaveType.CASUAL_LEAVE, 12, employee1);
-        LeaveBalance updatedCasualLeave = new LeaveBalance(1L, LeaveType.CASUAL_LEAVE, 10, employee1);
-        LeaveBalanceResponseDto expectedResponse = new LeaveBalanceResponseDto(1L, LeaveType.CASUAL_LEAVE, 10, employee1.getId(), employee1.getEmployeeName());
+        LeaveBalance initialCasualLeave = new LeaveBalance(1L, LeaveType.CASUAL_LEAVE, 12, employeeId);
+        LeaveBalance updatedCasualLeave = new LeaveBalance(1L, LeaveType.CASUAL_LEAVE, 10, employeeId);
+        LeaveBalanceResponseDto expectedResponse = new LeaveBalanceResponseDto(1L, LeaveType.CASUAL_LEAVE, 10, employeeId);
 
-        when(employeeRepository.findById(employee1.getId())).thenReturn(Optional.of(employee1));
-        when(leaveBalanceRepository.findByEmployeeAndLeaveType(employee1, LeaveType.CASUAL_LEAVE))
+        when(leaveBalanceRepository.findByEmployeeIdAndLeaveType(employeeId, LeaveType.CASUAL_LEAVE))
                 .thenReturn(Optional.of(initialCasualLeave));
         when(leaveBalanceRepository.save(any(LeaveBalance.class))).thenReturn(updatedCasualLeave);
 
-        LeaveBalanceResponseDto actualDto = leaveBalanceService.adjustLeaveBalance(employee1.getId(), LeaveType.CASUAL_LEAVE, 2, true);
+        LeaveBalanceResponseDto actualDto = leaveBalanceService.adjustLeaveBalance(employeeId, LeaveType.CASUAL_LEAVE, 2, true);
 
         assertThat(actualDto, is(expectedResponse));
         assertEquals(10, initialCasualLeave.getBalance());
@@ -231,16 +220,15 @@ public class LeaveBalanceServiceTest {
 
     @Test
     void adjustLeaveBalance_shouldAddDaysBack_whenRejected() {
-        LeaveBalance initialSickLeave = new LeaveBalance(2L, LeaveType.SICK_LEAVE, 7, employee1);
-        LeaveBalance updatedSickLeave = new LeaveBalance(2L, LeaveType.SICK_LEAVE, 9, employee1);
-        LeaveBalanceResponseDto expectedResponse = new LeaveBalanceResponseDto(2L, LeaveType.SICK_LEAVE, 9, employee1.getId(), employee1.getEmployeeName());
+        LeaveBalance initialSickLeave = new LeaveBalance(2L, LeaveType.SICK_LEAVE, 7, employeeId);
+        LeaveBalance updatedSickLeave = new LeaveBalance(2L, LeaveType.SICK_LEAVE, 9, employeeId);
+        LeaveBalanceResponseDto expectedResponse = new LeaveBalanceResponseDto(2L, LeaveType.SICK_LEAVE, 9, employeeId);
 
-        when(employeeRepository.findById(employee1.getId())).thenReturn(Optional.of(employee1));
-        when(leaveBalanceRepository.findByEmployeeAndLeaveType(employee1, LeaveType.SICK_LEAVE))
+        when(leaveBalanceRepository.findByEmployeeIdAndLeaveType(employeeId, LeaveType.SICK_LEAVE))
                 .thenReturn(Optional.of(initialSickLeave));
         when(leaveBalanceRepository.save(any(LeaveBalance.class))).thenReturn(updatedSickLeave);
 
-        LeaveBalanceResponseDto actualDto = leaveBalanceService.adjustLeaveBalance(employee1.getId(), LeaveType.SICK_LEAVE, 2, false);
+        LeaveBalanceResponseDto actualDto = leaveBalanceService.adjustLeaveBalance(employeeId, LeaveType.SICK_LEAVE, 2, false);
 
         assertThat(actualDto, is(expectedResponse));
         assertEquals(9, initialSickLeave.getBalance());
@@ -249,14 +237,13 @@ public class LeaveBalanceServiceTest {
 
     @Test
     void adjustLeaveBalance_shouldThrowIllegalArgumentException_whenInsufficientBalance() {
-        LeaveBalance initialCasualLeave = new LeaveBalance(1L, LeaveType.CASUAL_LEAVE, 2, employee1);
+        LeaveBalance initialCasualLeave = new LeaveBalance(1L, LeaveType.CASUAL_LEAVE, 2, employeeId);
 
-        when(employeeRepository.findById(employee1.getId())).thenReturn(Optional.of(employee1));
-        when(leaveBalanceRepository.findByEmployeeAndLeaveType(employee1, LeaveType.CASUAL_LEAVE))
+        when(leaveBalanceRepository.findByEmployeeIdAndLeaveType(employeeId, LeaveType.CASUAL_LEAVE))
                 .thenReturn(Optional.of(initialCasualLeave));
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> leaveBalanceService.adjustLeaveBalance(employee1.getId(), LeaveType.CASUAL_LEAVE, 5, true));
+                () -> leaveBalanceService.adjustLeaveBalance(employeeId, LeaveType.CASUAL_LEAVE, 5, true));
 
         assertThat(exception.getMessage(), containsString("Insufficient leave balance for CASUAL_LEAVE"));
         verify(leaveBalanceRepository, never()).save(any(LeaveBalance.class));
@@ -265,7 +252,6 @@ public class LeaveBalanceServiceTest {
     @Test
     void adjustLeaveBalance_shouldThrowResourceNotFoundException_whenEmployeeNotFound() {
         Long nonExistentEmployeeId = 999L;
-        when(employeeRepository.findById(nonExistentEmployeeId)).thenReturn(Optional.empty());
 
         ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class,
                 () -> leaveBalanceService.adjustLeaveBalance(nonExistentEmployeeId, LeaveType.CASUAL_LEAVE, 1, true));
@@ -275,14 +261,13 @@ public class LeaveBalanceServiceTest {
 
     @Test
     void adjustLeaveBalance_shouldThrowResourceNotFoundException_whenLeaveBalanceTypeNotFoundForEmployee() {
-        when(employeeRepository.findById(employee1.getId())).thenReturn(Optional.of(employee1));
-        when(leaveBalanceRepository.findByEmployeeAndLeaveType(employee1, LeaveType.PATERNITY_LEAVE))
+        when(leaveBalanceRepository.findByEmployeeIdAndLeaveType(employeeId, LeaveType.PATERNITY_LEAVE))
                 .thenReturn(Optional.empty());
 
         ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class,
-                () -> leaveBalanceService.adjustLeaveBalance(employee1.getId(), LeaveType.PATERNITY_LEAVE, 1, true));
+                () -> leaveBalanceService.adjustLeaveBalance(employeeId, LeaveType.PATERNITY_LEAVE, 1, true));
 
-        assertThat(exception.getMessage(), containsString("Leave balance of type PATERNITY_LEAVE not found for employee " + employee1.getId()));
+        assertThat(exception.getMessage(), containsString("Leave balance of type PATERNITY_LEAVE not found for employee " + employeeId));
     }
 
     @Test
@@ -311,10 +296,7 @@ public class LeaveBalanceServiceTest {
     @Test
     void initializeLeaveBalancesForNewEmployee_shouldCreateAllDefaultBalances() {
         Long newEmployeeId = 102L;
-        Employee newEmployee = new Employee(newEmployeeId, "New Employee", "new@example.com", Role.EMPLOYEE, null, null, null);
-
-        when(employeeRepository.findById(newEmployeeId)).thenReturn(Optional.of(newEmployee));
-        when(leaveBalanceRepository.findByEmployeeAndLeaveType(eq(newEmployee), any(LeaveType.class)))
+       when(leaveBalanceRepository.findByEmployeeIdAndLeaveType(eq(newEmployeeId), any(LeaveType.class)))
                 .thenReturn(Optional.empty());
         when(leaveBalanceRepository.save(any(LeaveBalance.class))).thenAnswer(invocation -> {
             LeaveBalance lb = invocation.getArgument(0);
@@ -330,15 +312,13 @@ public class LeaveBalanceServiceTest {
     @Test
     void initializeLeaveBalancesForNewEmployee_shouldNotOverwriteExistingBalances() {
         Long newEmployeeId = 102L;
-        Employee newEmployee = new Employee(newEmployeeId, "New Employee", "new@example.com", Role.EMPLOYEE, null, null, null);
-        LeaveBalance existingCasualLeave = new LeaveBalance(4L, LeaveType.CASUAL_LEAVE, 5, newEmployee);
+        LeaveBalance existingCasualLeave = new LeaveBalance(4L, LeaveType.CASUAL_LEAVE, 5, newEmployeeId);
 
-        when(employeeRepository.findById(newEmployeeId)).thenReturn(Optional.of(newEmployee));
-        when(leaveBalanceRepository.findByEmployeeAndLeaveType(eq(newEmployee), eq(LeaveType.CASUAL_LEAVE)))
+       when(leaveBalanceRepository.findByEmployeeIdAndLeaveType(eq(newEmployeeId), eq(LeaveType.CASUAL_LEAVE)))
                 .thenReturn(Optional.of(existingCasualLeave));
-        when(leaveBalanceRepository.findByEmployeeAndLeaveType(eq(newEmployee), eq(LeaveType.SICK_LEAVE)))
+        when(leaveBalanceRepository.findByEmployeeIdAndLeaveType(eq(newEmployeeId), eq(LeaveType.SICK_LEAVE)))
                 .thenReturn(Optional.empty());
-        when(leaveBalanceRepository.findByEmployeeAndLeaveType(eq(newEmployee), eq(LeaveType.VACATION_LEAVE)))
+        when(leaveBalanceRepository.findByEmployeeIdAndLeaveType(eq(newEmployeeId), eq(LeaveType.VACATION_LEAVE)))
                 .thenReturn(Optional.empty());
         when(leaveBalanceRepository.save(any(LeaveBalance.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -352,7 +332,6 @@ public class LeaveBalanceServiceTest {
     @Test
     void initializeLeaveBalancesForNewEmployee_shouldThrowResourceNotFoundException_whenEmployeeNotFound() {
         Long nonExistentEmployeeId = 999L;
-        when(employeeRepository.findById(nonExistentEmployeeId)).thenReturn(Optional.empty());
 
         ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class,
                 () -> leaveBalanceService.initializeLeaveBalancesForNewEmployee(nonExistentEmployeeId));

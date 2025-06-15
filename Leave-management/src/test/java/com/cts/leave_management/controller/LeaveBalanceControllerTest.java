@@ -53,10 +53,10 @@ public class LeaveBalanceControllerTest {
                 null, LeaveType.CASUAL_LEAVE, 12, 101L
         );
         casualLeaveResponseDto = new LeaveBalanceResponseDto(
-                1L, LeaveType.CASUAL_LEAVE, 12, 101L, "Employee One"
+                1L, LeaveType.CASUAL_LEAVE, 12, 101L
         );
         sickLeaveResponseDto = new LeaveBalanceResponseDto(
-                2L, LeaveType.SICK_LEAVE, 7, 101L, "Employee One"
+                2L, LeaveType.SICK_LEAVE, 7, 101L
         );
     }
 
@@ -153,7 +153,7 @@ public class LeaveBalanceControllerTest {
                 id, LeaveType.CASUAL_LEAVE, 10, 101L // Updated balance
         );
         LeaveBalanceResponseDto updatedResponseDto = new LeaveBalanceResponseDto(
-                id, LeaveType.CASUAL_LEAVE, 10, 101L, "Employee One"
+                id, LeaveType.CASUAL_LEAVE, 10, 101L
         );
 
         when(leaveBalanceService.updateLeaveBalance(eq(id), any(LeaveBalanceRequestDto.class))).thenReturn(updatedResponseDto);
@@ -178,7 +178,7 @@ public class LeaveBalanceControllerTest {
         int days = 2;
         boolean isApproved = true;
         LeaveBalanceResponseDto adjustedResponseDto = new LeaveBalanceResponseDto(
-                1L, LeaveType.CASUAL_LEAVE, 10, 101L, "Employee One"
+                1L, LeaveType.CASUAL_LEAVE, 10, 101L
         );
 
         when(leaveBalanceService.adjustLeaveBalance(employeeId, leaveType, days, isApproved))
@@ -206,7 +206,7 @@ public class LeaveBalanceControllerTest {
         int days = 3;
         boolean isApproved = false;
         LeaveBalanceResponseDto adjustedResponseDto = new LeaveBalanceResponseDto(
-                2L, LeaveType.SICK_LEAVE, 10, 101L, "Employee One"
+                2L, LeaveType.SICK_LEAVE, 10, 101L
         );
 
         when(leaveBalanceService.adjustLeaveBalance(employeeId, leaveType, days, isApproved))

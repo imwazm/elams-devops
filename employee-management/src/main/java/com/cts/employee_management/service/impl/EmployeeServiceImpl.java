@@ -207,8 +207,10 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
-    public EmployeeAuthDto findEmployeeForSignup(Long id) {
-        return modelMapper.map(this.findEmployeeByIdHelper(id), EmployeeAuthDto.class);
+    public EmployeeAuthDto loadEmployeeByEmail(String email) {
+        Employee employee = employeeRepository.findByEmail(email)
+                .orElseThrow(()->new ResourceNotFoundException("user is not found!"));
+        return modelMapper.map(employee, EmployeeAuthDto.class);
     }
 
     private EmployeeResponseDto convertToDto(Employee employee){

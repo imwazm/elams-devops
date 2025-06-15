@@ -15,8 +15,7 @@ public class AuthUser {
     @Id
     private Long id;
 
-    @OneToOne
-    private Employee employee;
+    private Long employeeId;
 
     private String password;
 }

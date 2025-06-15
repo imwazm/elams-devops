@@ -53,9 +53,9 @@ public class EmployeeController {
         return employeeService.findEmployeeById(id);
     }
 
-    @GetMapping("signup/{id}")
-    public EmployeeAuthDto getEmployeeForSignup(@PathVariable Long id){
-        return employeeService.findEmployeeForSignup(id);
+    @GetMapping("load-employee-by-email/{email}")
+    public EmployeeAuthDto loadEmployeeByEmail(@PathVariable String email){
+        return employeeService.loadEmployeeByEmail(email);
     }
 
     @PutMapping("{id}/promote")

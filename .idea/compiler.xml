@@ -23,12 +23,16 @@
         <module name="attendance-management" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="auth-service" target="21" />
+    </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="Leave-management" options="-parameters" />
       <module name="api-gateway" options="-parameters" />
       <module name="attendance-management" options="-parameters" />
+      <module name="auth-service" options="-parameters" />
       <module name="config-server" options="-parameters" />
       <module name="employee-management" options="-parameters" />
       <module name="registry-server" options="-parameters" />

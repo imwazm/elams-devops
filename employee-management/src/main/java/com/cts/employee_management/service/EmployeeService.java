@@ -37,5 +37,5 @@ public interface EmployeeService {
 
     boolean checkEmployeeExists(Long id);
 
-    EmployeeAuthDto findEmployeeForSignup(Long id);
+    EmployeeAuthDto loadEmployeeByEmail(String email);
 }

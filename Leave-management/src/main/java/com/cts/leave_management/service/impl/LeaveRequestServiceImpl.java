@@ -1,5 +1,6 @@
 package com.cts.leave_management.service.impl;
 
+import com.cts.leave_management.client.EmployeeClient;
 import com.cts.leave_management.dto.LeaveRequestDto;
 import com.cts.leave_management.dto.LeaveRequestResponseDto;
 import com.cts.leave_management.entity.LeaveRequest;
@@ -32,6 +33,9 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
 
     @Autowired
     private LeaveBalanceService leaveBalanceService;
+
+    @Autowired
+    private EmployeeClient employeeClient;
 
     private int calculateWorkingDays(LocalDate startDate, LocalDate endDate) {
         if (endDate.isBefore(startDate)) {
@@ -133,7 +137,7 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
 
     @Override
     public List<LeaveRequestResponseDto> getLeaveRequestsByStatusAndEmployee(LeaveRequestStatus status, Long employeeId) {
-        //TODO: check for employee existence
+        employeeClient.checkEmployeeExists(employeeId);
 
         return leaveRequestRepository.findByStatusAndEmployeeId(status, employeeId).stream()
                 .map(this::convertToResponseDto)
@@ -142,7 +146,7 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
 
     @Override
     public List<LeaveRequestResponseDto> getLeaveRequestsByEmployee(Long employeeId) {
-        //TODO: check for employee existence
+        employeeClient.checkEmployeeExists(employeeId);
 
         return leaveRequestRepository.findByEmployeeId(employeeId).stream()
                 .map(this::convertToResponseDto)

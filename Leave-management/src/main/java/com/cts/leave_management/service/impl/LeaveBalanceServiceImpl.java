@@ -1,5 +1,6 @@
 package com.cts.leave_management.service.impl;
 
+import com.cts.leave_management.client.EmployeeClient;
 import com.cts.leave_management.dto.LeaveBalanceRequestDto;
 import com.cts.leave_management.dto.LeaveBalanceResponseDto;
 import com.cts.leave_management.entity.LeaveBalance;
@@ -23,6 +24,9 @@ import java.util.stream.Collectors;
 public class LeaveBalanceServiceImpl implements LeaveBalanceService {
 
     @Autowired
+    private EmployeeClient employeeClient;
+
+    @Autowired
     private LeaveBalanceRepository leaveBalanceRepository;
 
     @Autowired
@@ -34,7 +38,7 @@ public class LeaveBalanceServiceImpl implements LeaveBalanceService {
     @Transactional
     public LeaveBalanceResponseDto addLeaveBalance(LeaveBalanceRequestDto leaveBalanceDto) {
         logger.info("Attempting to add/update leave balance for employee ID: {}", leaveBalanceDto.getEmployeeId());
-        //TODO: check for employee existence
+        employeeClient.checkEmployeeExists(leaveBalanceDto.getEmployeeId());
 
         Optional<LeaveBalance> existingBalance = leaveBalanceRepository.findByEmployeeIdAndLeaveType(leaveBalanceDto.getEmployeeId(), leaveBalanceDto.getLeaveType());
 
@@ -74,7 +78,7 @@ public class LeaveBalanceServiceImpl implements LeaveBalanceService {
     @Override
     public List<LeaveBalanceResponseDto> findLeaveBalancesByEmployeeId(Long employeeId) {
         logger.info("Fetching leave balances for employee ID: {}", employeeId);
-        //TODO: check for employee existence
+        employeeClient.checkEmployeeExists(employeeId);
         List<LeaveBalance> leaveBalances = leaveBalanceRepository.findByEmployeeId(employeeId);
         logger.info("Found {} leave balances for employee ID: {}", leaveBalances.size(), employeeId);
         return leaveBalances.stream()
@@ -89,7 +93,7 @@ public class LeaveBalanceServiceImpl implements LeaveBalanceService {
         LeaveBalance existingLeaveBalance = leaveBalanceRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Leave balance with id " + id + " not found"));
 
-        //TODO: check for employee existence
+        employeeClient.checkEmployeeExists(leaveBalanceDto.getEmployeeId());
 
         existingLeaveBalance.setLeaveType(leaveBalanceDto.getLeaveType());
         existingLeaveBalance.setBalance(leaveBalanceDto.getBalance());
@@ -105,7 +109,7 @@ public class LeaveBalanceServiceImpl implements LeaveBalanceService {
     public LeaveBalanceResponseDto adjustLeaveBalance(Long employeeId, LeaveType leaveType, int days, boolean isApproved) {
         logger.info("Adjusting leave balance for employee ID: {}, Leave Type: {}, Days: {}, Approved: {}", employeeId, leaveType, days, isApproved);
 
-        //TODO: check for employee existence
+        employeeClient.checkEmployeeExists(employeeId);
 
         LeaveBalance leaveBalance = leaveBalanceRepository.findByEmployeeIdAndLeaveType(employeeId, leaveType)
                 .orElseThrow(() -> new ResourceNotFoundException("Leave balance of type " + leaveType + " not found for employee " + employeeId));
@@ -142,7 +146,7 @@ public class LeaveBalanceServiceImpl implements LeaveBalanceService {
     public void initializeLeaveBalancesForNewEmployee(Long employeeId) {
         logger.info("Initializing leave balances for new employee with ID: {}", employeeId);
 
-        //TODO: check for employee existence
+        employeeClient.checkEmployeeExists(employeeId);
 
         List<LeaveType> leaveTypesToInitialize = Arrays.asList(
                 LeaveType.CASUAL_LEAVE,
@@ -202,7 +206,7 @@ public class LeaveBalanceServiceImpl implements LeaveBalanceService {
     public void checkSufficientLeaveBalance(Long employeeId, LeaveType leaveType, int days) {
         logger.info("Checking sufficient leave balance for employee ID: {}, Leave Type: {}, Days: {}", employeeId, leaveType, days);
 
-        //TODO: check for employee existence
+        employeeClient.checkEmployeeExists(employeeId);
 
         LeaveBalance leaveBalance = leaveBalanceRepository.findByEmployeeIdAndLeaveType(employeeId, leaveType)
                 .orElseThrow(() -> new ResourceNotFoundException("Leave balance of type " + leaveType + " not found for employee " + employeeId));

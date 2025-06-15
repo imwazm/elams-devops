@@ -1,10 +1,8 @@
 package com.cts.api_gateway.controller;
 
 import com.cts.api_gateway.dto.UserLoginDto;
-import com.cts.api_gateway.entity.AuthUser;
-import com.cts.api_gateway.repository.AuthRepository;
 import com.cts.api_gateway.security.JwtUtil;
-import com.netflix.discovery.converters.Auto;
+import com.cts.api_gateway.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,12 +11,12 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
-import java.util.Optional;
 
 @RestController("auth")
 public class AuthController {
@@ -28,6 +26,14 @@ public class AuthController {
 
     @Autowired
     private JwtUtil jwtUtil;
+
+    @Autowired
+    private AuthService authService;
+
+    @PostMapping("create-auth/{email}")
+    public void createAuth(@PathVariable String email){
+        authService.createAuth(email);
+    }
 
     @PostMapping("login")
     public ResponseEntity<Map<String, String>>login(@RequestBody UserLoginDto user){

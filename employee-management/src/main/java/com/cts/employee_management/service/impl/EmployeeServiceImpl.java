@@ -222,6 +222,10 @@ public class EmployeeServiceImpl implements EmployeeService {
         return mappedDto;
     }
 
+    private void createAuth(String email){
+
+    }
+
     private Employee findEmployeeByIdHelper(Long id){
         logger.info("Searching for employee with ID: " + id);
         return employeeRepository.findById(id).orElseThrow(

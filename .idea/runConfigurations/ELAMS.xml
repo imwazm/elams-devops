@@ -1,0 +1,11 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="ELAMS" type="CompoundRunConfigurationType">
+    <toRun name="ApiGateway" type="Application" />
+    <toRun name="AttendanceManagement" type="Application" />
+    <toRun name="ConfigServer" type="Application" />
+    <toRun name="EmployeeManagement" type="Application" />
+    <toRun name="LeaveManagement" type="Application" />
+    <toRun name="RegistryServer" type="Application" />
+    <method v="2" />
+  </configuration>
+</component>

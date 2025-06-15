@@ -6,6 +6,7 @@ import com.cts.attendance_management.entity.enums.AttendanceReportType;
 import com.cts.attendance_management.entity.enums.AttendanceStatus;
 import com.cts.attendance_management.exception.ResourceNotFoundException;
 import com.cts.attendance_management.repository.AttendanceRepository;
+import feign.FeignException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,10 +25,10 @@ import java.util.stream.Collectors; // Required for .collect(Collectors.toList()
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest
@@ -111,10 +112,11 @@ public class AttendanceReportServiceTest {
         Long nonExistentEmployeeId = 99L;
 
         // --- Act & Assert ---
-        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () ->
+        FeignException exception = assertThrows(FeignException.class, () ->
                 attendanceReportService.getReportsByEmployee(nonExistentEmployeeId)
         );
-        assertThat(exception.getMessage(), is("Employee not found with id: " + nonExistentEmployeeId));
+        String msg = exception.contentUTF8();
+        assertThat(msg, containsString("Employee with id " + nonExistentEmployeeId+" not found"));
     }
 
     @Test

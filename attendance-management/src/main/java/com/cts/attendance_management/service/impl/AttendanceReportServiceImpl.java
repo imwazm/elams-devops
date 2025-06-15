@@ -1,5 +1,6 @@
 package com.cts.attendance_management.service.impl;
 
+import com.cts.attendance_management.client.EmployeeClient;
 import com.cts.attendance_management.dto.AttendanceReportDto;
 import com.cts.attendance_management.entity.Attendance;
 import com.cts.attendance_management.entity.enums.AttendanceReportType;
@@ -8,6 +9,7 @@ import com.cts.attendance_management.exception.ResourceNotFoundException;
 import com.cts.attendance_management.repository.AttendanceRepository;
 import com.cts.attendance_management.service.AttendanceReportService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.stereotype.Service;
 
 import java.time.DayOfWeek;
@@ -26,10 +28,13 @@ public class AttendanceReportServiceImpl implements AttendanceReportService {
     @Autowired
     private AttendanceRepository attendanceRepository;
 
+    @Autowired
+    private EmployeeClient employeeClient;
+
 
     @Override
     public List<AttendanceReportDto> getReportsByEmployee(Long employeeId) {
-        //TODO: check for employee existance
+        employeeClient.checkEmployeeExists(employeeId);
         LocalDate today = LocalDate.now();
         LocalDate startOfYear = today.with(TemporalAdjusters.firstDayOfYear());
         LocalDate endOfYear = today.with(TemporalAdjusters.lastDayOfYear());
@@ -41,7 +46,7 @@ public class AttendanceReportServiceImpl implements AttendanceReportService {
 
     @Override
     public List<AttendanceReportDto> getReportsByEmployeeAndType(Long employeeId, String type) {
-        //TODO: check for employee existence
+        employeeClient.checkEmployeeExists(employeeId);
 
         AttendanceReportType reportType;
         try {
@@ -72,7 +77,7 @@ public class AttendanceReportServiceImpl implements AttendanceReportService {
 
     @Override
     public AttendanceReportDto getCustomReportByEmployee(Long employeeId, LocalDate startDate, LocalDate endDate) {
-        //TODO: check for employee existance
+        employeeClient.checkEmployeeExists(employeeId);
 
         List<Attendance> attendances = attendanceRepository.findByEmployeeIdAndDateBetween(employeeId, startDate, endDate);
 

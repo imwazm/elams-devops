@@ -1,5 +1,6 @@
 package com.cts.attendance_management.service.impl;
 
+import com.cts.attendance_management.client.EmployeeClient;
 import com.cts.attendance_management.dto.AttendanceClockInRequestDto;
 import com.cts.attendance_management.dto.AttendanceClockOutRequestDto;
 import com.cts.attendance_management.dto.AttendanceResponseDto;
@@ -26,6 +27,9 @@ public class AttendanceServiceImpl implements AttendanceService {
     private static final Logger logger = LoggerFactory.getLogger(AttendanceServiceImpl.class);
 
     @Autowired
+    EmployeeClient employeeClient;
+
+    @Autowired
     AttendanceRepository attendanceRepository;
 
     @Autowired
@@ -42,8 +46,8 @@ public class AttendanceServiceImpl implements AttendanceService {
             logger.error(msg);
             throw new AttendanceRegisterException(msg);
         }
+        employeeClient.checkEmployeeExists(attendanceClockInRequestDto.getEmployeeId());
         Attendance attendance = modelMapper.map(attendanceClockInRequestDto, Attendance.class);
-        //TODO: check for employee existance
         Attendance savedAttendance = attendanceRepository.save(attendance);
         String msg = "Employee with id "+ attendanceClockInRequestDto.getEmployeeId()
                 +" has clocked in at " + attendanceClockInRequestDto.getClockInTime();

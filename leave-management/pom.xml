@@ -9,7 +9,7 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.cts</groupId>
-	<artifactId>Leave-management</artifactId>
+	<artifactId>leave-management</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>Leave-management</name>
 	<description>Microservice module for LeaveManagement</description>

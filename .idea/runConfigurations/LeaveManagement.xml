@@ -1,7 +1,7 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="LeaveManagement" type="Application" factoryName="Application">
     <option name="MAIN_CLASS_NAME" value="com.cts.leave_management.LeaveManagementApplication" />
-    <module name="Leave-management" />
+    <module name="leave-management" />
     <extension name="coverage">
       <pattern>
         <option name="PATTERN" value="com.cts.leave_management.*" />

@@ -18,8 +18,17 @@
         <processorPath useClasspath="false">
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.38/lombok-1.18.38.jar" />
         </processorPath>
-        <module name="Leave-management" />
         <module name="employee-management" />
+      </profile>
+      <profile name="Annotation profile for Leave-management" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.38/lombok-1.18.38.jar" />
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.38/lombok-1.18.38.jar" />
+        </processorPath>
+        <module name="leave-management" />
         <module name="attendance-management" />
       </profile>
     </annotationProcessing>
@@ -29,12 +38,12 @@
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
-      <module name="Leave-management" options="-parameters" />
       <module name="api-gateway" options="-parameters" />
       <module name="attendance-management" options="-parameters" />
       <module name="auth-service" options="-parameters" />
       <module name="config-server" options="-parameters" />
       <module name="employee-management" options="-parameters" />
+      <module name="leave-management" options="-parameters" />
       <module name="registry-server" options="-parameters" />
     </option>
   </component>

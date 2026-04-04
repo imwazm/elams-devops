@@ -1,3 +1,12 @@
+## Background
+
+This project was originally developed during my internship at Cognizant under a different Git account.
+
+I have continued development here focusing on DevOps practices such as:
+- Docker containerization
+- Multi-stage builds with layer optimization
+- Kubernetes deployment
+- CI/CD automation
 # Employee Attendance Microservice
 
 This project is a microservices-based system designed to manage employee attendance, leave balances, and shift schedules. It consists of multiple modules, each responsible for a specific functionality. The system is built using Spring Boot and follows a modular architecture to ensure scalability and maintainability.

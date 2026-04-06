@@ -1,0 +1,4 @@
+CREATE DATABASE IF NOT EXISTS employee_management;
+CREATE DATABASE IF NOT EXISTS attendance_management;
+CREATE DATABASE IF NOT EXISTS leave_management;
+CREATE DATABASE IF NOT EXISTS auth_service_db;

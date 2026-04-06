@@ -1,0 +1,76 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  registry-server:
+    build:
+      context: ../../services/registry-server
+      dockerfile: Dockerfile
+    container_name: registry-server
+    ports:
+      - "8761:8761"
+    depends_on:
+      - mysql
+
+  config-server:
+    build:
+      context: ../../services/config-server
+      dockerfile: Dockerfile
+    container_name: config-server
+    ports:
+      - "8888:8888"
+    depends_on:
+      - registry-server
+
+  employee-management:
+    build:
+      context: ../../services/employee-management
+      dockerfile: Dockerfile
+    container_name: employee-management
+    ports:
+      - "9191:9191"
+    depends_on:
+      - config-server
+
+  attendance-management:
+    build:
+      context: ../../services/attendance-management
+      dockerfile: Dockerfile
+    container_name: attendance-management
+    ports:
+      - "9193:9193"
+    depends_on:
+      - config-server
+
+  leave-management:
+    build:
+      context: ../../services/leave-management
+      dockerfile: Dockerfile
+    container_name: leave-management
+    ports:
+      - "9192:9192"
+    depends_on:
+      - config-server
+
+  api-gateway:
+    build:
+      context: ../../services/api-gateway
+      dockerfile: Dockerfile
+    container_name: api-gateway
+    ports:
+      - "9090:9090"
+    depends_on:
+      - config-server
+
+volumes:
+  mysql_data:
